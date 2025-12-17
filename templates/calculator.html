@@ -1,0 +1,473 @@
+{% extends "base.html" %}
+
+{% block title %}Electronics Calculator - ElectroHub{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <h2 class="mb-4"><i class="fas fa-calculator text-primary me-2"></i>Electronics Calculator</h2>
+
+    <div class="theory-panel">
+        <h6><i class="fas fa-lightbulb me-2"></i>Quick Reference</h6>
+        <p class="mb-0">Ohm's Law: V = IR | Power: P = VI = I²R = V²/R | Time Constant: τ = RC (or L/R)</p>
+    </div>
+
+    <ul class="nav nav-tabs mb-3" id="calcTabs" role="tablist">
+        <li class="nav-item"><a class="nav-link active" data-bs-toggle="tab" href="#ohmsLaw">Ohm's Law</a></li>
+        <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#rcCircuit">RC Circuit</a></li>
+        <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#rlCircuit">RL Circuit</a></li>
+        <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#rlcCircuit">RLC Circuit</a></li>
+        <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#voltageDivider">Voltage Divider</a></li>
+        <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#tolerance">Tolerance</a></li>
+        <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#powerRating">Power Rating</a></li>
+        <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#unitConverter">Unit Converter</a></li>
+    </ul>
+
+    <div class="tab-content">
+        <div class="tab-pane fade show active" id="ohmsLaw">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header">Ohm's Law Calculator</div>
+                        <div class="card-body">
+                            <p class="text-muted">Enter any two values to calculate the third</p>
+                            <div class="mb-3">
+                                <label class="form-label">Voltage (V)</label>
+                                <input type="number" class="form-control" id="ohmVoltage" step="any" placeholder="Enter voltage">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Current (A)</label>
+                                <input type="number" class="form-control" id="ohmCurrent" step="any" placeholder="Enter current">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Resistance (Ω)</label>
+                                <input type="number" class="form-control" id="ohmResistance" step="any" placeholder="Enter resistance">
+                            </div>
+                            <button class="btn btn-primary w-100" onclick="calculateOhmsLaw()">
+                                <i class="fas fa-calculator me-2"></i>Calculate
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card result-card">
+                        <div class="card-header">Results</div>
+                        <div class="card-body" id="ohmsLawResults">
+                            <p class="text-muted">Results will appear here...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="tab-pane fade" id="rcCircuit">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header">RC Circuit Analysis</div>
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <label class="form-label">Resistance (Ω)</label>
+                                <input type="number" class="form-control" id="rcResistance" step="any" value="1000">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Capacitance (F)</label>
+                                <input type="number" class="form-control" id="rcCapacitance" step="any" value="0.000001">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Frequency (Hz) - Optional</label>
+                                <input type="number" class="form-control" id="rcFrequency" step="any" placeholder="For AC analysis">
+                            </div>
+                            <button class="btn btn-primary w-100" onclick="calculateRC()">
+                                <i class="fas fa-calculator me-2"></i>Calculate
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card result-card">
+                        <div class="card-header">Results</div>
+                        <div class="card-body" id="rcResults">
+                            <p class="text-muted">Results will appear here...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="tab-pane fade" id="rlCircuit">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header">RL Circuit Analysis</div>
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <label class="form-label">Resistance (Ω)</label>
+                                <input type="number" class="form-control" id="rlResistance" step="any" value="100">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Inductance (H)</label>
+                                <input type="number" class="form-control" id="rlInductance" step="any" value="0.01">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Frequency (Hz) - Optional</label>
+                                <input type="number" class="form-control" id="rlFrequency" step="any" placeholder="For AC analysis">
+                            </div>
+                            <button class="btn btn-primary w-100" onclick="calculateRL()">
+                                <i class="fas fa-calculator me-2"></i>Calculate
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card result-card">
+                        <div class="card-header">Results</div>
+                        <div class="card-body" id="rlResults">
+                            <p class="text-muted">Results will appear here...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="tab-pane fade" id="rlcCircuit">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header">RLC Circuit Analysis</div>
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <label class="form-label">Resistance (Ω)</label>
+                                <input type="number" class="form-control" id="rlcResistance" step="any" value="100">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Inductance (H)</label>
+                                <input type="number" class="form-control" id="rlcInductance" step="any" value="0.01">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Capacitance (F)</label>
+                                <input type="number" class="form-control" id="rlcCapacitance" step="any" value="0.000001">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Frequency (Hz) - Optional</label>
+                                <input type="number" class="form-control" id="rlcFrequency" step="any">
+                            </div>
+                            <button class="btn btn-primary w-100" onclick="calculateRLC()">
+                                <i class="fas fa-calculator me-2"></i>Calculate
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card result-card">
+                        <div class="card-header">Results</div>
+                        <div class="card-body" id="rlcResults">
+                            <p class="text-muted">Results will appear here...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="tab-pane fade" id="voltageDivider">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header">Voltage Divider Calculator</div>
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <label class="form-label">Input Voltage (V)</label>
+                                <input type="number" class="form-control" id="vdVin" step="any" value="12">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">R1 (Ω)</label>
+                                <input type="number" class="form-control" id="vdR1" step="any" value="10000">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">R2 (Ω)</label>
+                                <input type="number" class="form-control" id="vdR2" step="any" value="10000">
+                            </div>
+                            <button class="btn btn-primary w-100" onclick="calculateVoltageDivider()">
+                                <i class="fas fa-calculator me-2"></i>Calculate
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card result-card">
+                        <div class="card-header">Results</div>
+                        <div class="card-body" id="vdResults">
+                            <p class="text-muted">Results will appear here...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="tab-pane fade" id="tolerance">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header">Tolerance Analysis</div>
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <label class="form-label">Nominal Value</label>
+                                <input type="number" class="form-control" id="tolNominal" step="any" value="1000">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Tolerance (%)</label>
+                                <input type="number" class="form-control" id="tolPercent" step="any" value="5">
+                            </div>
+                            <button class="btn btn-primary w-100" onclick="calculateTolerance()">
+                                <i class="fas fa-calculator me-2"></i>Calculate
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card result-card">
+                        <div class="card-header">Results</div>
+                        <div class="card-body" id="tolResults">
+                            <p class="text-muted">Results will appear here...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="tab-pane fade" id="powerRating">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header">Power Rating Check</div>
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <label class="form-label">Voltage (V)</label>
+                                <input type="number" class="form-control" id="prVoltage" step="any" value="12">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Current (A)</label>
+                                <input type="number" class="form-control" id="prCurrent" step="any" value="0.5">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Rated Power (W)</label>
+                                <input type="number" class="form-control" id="prRated" step="any" value="10">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Derating Factor</label>
+                                <input type="number" class="form-control" id="prDerating" step="any" value="0.8">
+                            </div>
+                            <button class="btn btn-primary w-100" onclick="calculatePowerRating()">
+                                <i class="fas fa-calculator me-2"></i>Check
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card result-card">
+                        <div class="card-header">Results</div>
+                        <div class="card-body" id="prResults">
+                            <p class="text-muted">Results will appear here...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="tab-pane fade" id="unitConverter">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header">Unit Converter</div>
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <label class="form-label">Value</label>
+                                <input type="number" class="form-control" id="ucValue" step="any" value="1000">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">From Prefix</label>
+                                <select class="form-select" id="ucFrom">
+                                    <option value="T">Tera (T)</option>
+                                    <option value="G">Giga (G)</option>
+                                    <option value="M">Mega (M)</option>
+                                    <option value="k">Kilo (k)</option>
+                                    <option value="" selected>Base Unit</option>
+                                    <option value="m">Milli (m)</option>
+                                    <option value="u">Micro (μ)</option>
+                                    <option value="n">Nano (n)</option>
+                                    <option value="p">Pico (p)</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">To Prefix</label>
+                                <select class="form-select" id="ucTo">
+                                    <option value="T">Tera (T)</option>
+                                    <option value="G">Giga (G)</option>
+                                    <option value="M">Mega (M)</option>
+                                    <option value="k">Kilo (k)</option>
+                                    <option value="">Base Unit</option>
+                                    <option value="m" selected>Milli (m)</option>
+                                    <option value="u">Micro (μ)</option>
+                                    <option value="n">Nano (n)</option>
+                                    <option value="p">Pico (p)</option>
+                                </select>
+                            </div>
+                            <button class="btn btn-primary w-100" onclick="convertUnit()">
+                                <i class="fas fa-exchange-alt me-2"></i>Convert
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card result-card">
+                        <div class="card-header">Result</div>
+                        <div class="card-body" id="ucResults">
+                            <p class="text-muted">Result will appear here...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    async function calculateOhmsLaw() {
+        const voltage = document.getElementById('ohmVoltage').value || null;
+        const current = document.getElementById('ohmCurrent').value || null;
+        const resistance = document.getElementById('ohmResistance').value || null;
+
+        const response = await apiCall('/api/calculator/ohms-law', 'POST', {
+            voltage: voltage ? parseFloat(voltage) : null,
+            current: current ? parseFloat(current) : null,
+            resistance: resistance ? parseFloat(resistance) : null
+        });
+
+        displayResults('ohmsLawResults', response);
+    }
+
+    async function calculateRC() {
+        const resistance = parseFloat(document.getElementById('rcResistance').value);
+        const capacitance = parseFloat(document.getElementById('rcCapacitance').value);
+        const frequency = document.getElementById('rcFrequency').value || null;
+
+        const response = await apiCall('/api/calculator/rc-circuit', 'POST', {
+            resistance: resistance,
+            capacitance: capacitance,
+            frequency: frequency ? parseFloat(frequency) : null
+        });
+
+        displayResults('rcResults', response);
+    }
+
+    async function calculateRL() {
+        const resistance = parseFloat(document.getElementById('rlResistance').value);
+        const inductance = parseFloat(document.getElementById('rlInductance').value);
+        const frequency = document.getElementById('rlFrequency').value || null;
+
+        const response = await apiCall('/api/calculator/rl-circuit', 'POST', {
+            resistance: resistance,
+            inductance: inductance,
+            frequency: frequency ? parseFloat(frequency) : null
+        });
+
+        displayResults('rlResults', response);
+    }
+
+    async function calculateRLC() {
+        const resistance = parseFloat(document.getElementById('rlcResistance').value);
+        const inductance = parseFloat(document.getElementById('rlcInductance').value);
+        const capacitance = parseFloat(document.getElementById('rlcCapacitance').value);
+        const frequency = document.getElementById('rlcFrequency').value || null;
+
+        const response = await apiCall('/api/calculator/rlc-circuit', 'POST', {
+            resistance: resistance,
+            inductance: inductance,
+            capacitance: capacitance,
+            frequency: frequency ? parseFloat(frequency) : null
+        });
+
+        displayResults('rlcResults', response);
+    }
+
+    async function calculateVoltageDivider() {
+        const vin = parseFloat(document.getElementById('vdVin').value);
+        const r1 = parseFloat(document.getElementById('vdR1').value);
+        const r2 = parseFloat(document.getElementById('vdR2').value);
+
+        const response = await apiCall('/api/calculator/voltage-divider', 'POST', {
+            vin: vin, r1: r1, r2: r2
+        });
+
+        displayResults('vdResults', response);
+    }
+
+    async function calculateTolerance() {
+        const nominal = parseFloat(document.getElementById('tolNominal').value);
+        const percent = parseFloat(document.getElementById('tolPercent').value);
+
+        const response = await apiCall('/api/calculator/tolerance', 'POST', {
+            nominal_value: nominal, tolerance_percent: percent
+        });
+
+        displayResults('tolResults', response);
+    }
+
+    async function calculatePowerRating() {
+        const voltage = parseFloat(document.getElementById('prVoltage').value);
+        const current = parseFloat(document.getElementById('prCurrent').value);
+        const rated = parseFloat(document.getElementById('prRated').value);
+        const derating = parseFloat(document.getElementById('prDerating').value);
+
+        const response = await apiCall('/api/calculator/power-rating', 'POST', {
+            voltage: voltage, current: current, rated_power: rated, derating_factor: derating
+        });
+
+        displayResults('prResults', response);
+    }
+
+    async function convertUnit() {
+        const value = parseFloat(document.getElementById('ucValue').value);
+        const fromPrefix = document.getElementById('ucFrom').value;
+        const toPrefix = document.getElementById('ucTo').value;
+
+        const response = await apiCall('/api/calculator/unit-convert', 'POST', {
+            value: value, from_prefix: fromPrefix, to_prefix: toPrefix
+        });
+
+        document.getElementById('ucResults').innerHTML = `
+            <div class="result-value">${formatNumber(response.result)}</div>
+            <div class="result-label">${value} ${fromPrefix} = ${formatNumber(response.result)} ${toPrefix}</div>
+        `;
+    }
+
+    function displayResults(elementId, response) {
+        let html = '';
+
+        if (response.result) {
+            html += '<div class="row">';
+            for (const [key, value] of Object.entries(response.result)) {
+                const label = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                html += `
+                    <div class="col-md-6 mb-3">
+                        <div class="p-3 bg-light rounded">
+                            <div class="result-label">${label}</div>
+                            <div class="result-value">${formatNumber(value)}</div>
+                        </div>
+                    </div>
+                `;
+            }
+            html += '</div>';
+        }
+
+        if (response.warnings && response.warnings.length > 0) {
+            html += '<div class="warning-box"><i class="fas fa-exclamation-triangle me-2"></i>';
+            html += response.warnings.join('<br>');
+            html += '</div>';
+        }
+
+        document.getElementById(elementId).innerHTML = html || '<p class="text-muted">No results</p>';
+    }
+</script>
+{% endblock %}

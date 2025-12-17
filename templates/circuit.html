@@ -1,0 +1,294 @@
+{% extends "base.html" %}
+
+{% block title %}Circuit Analysis - ElectroHub{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <h2 class="mb-4"><i class="fas fa-project-diagram text-primary me-2"></i>Circuit Analysis</h2>
+
+    <div class="theory-panel">
+        <h6><i class="fas fa-lightbulb me-2"></i>Theory</h6>
+        <p class="mb-0">DC circuits follow Kirchhoff's laws. AC circuits include reactive components (L, C) that cause phase shifts. Impedance Z = R + jX where X is reactance.</p>
+    </div>
+
+    <ul class="nav nav-tabs mb-3">
+        <li class="nav-item"><a class="nav-link active" data-bs-toggle="tab" href="#dcAnalysis">DC Analysis</a></li>
+        <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#acAnalysis">AC Analysis</a></li>
+        <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#freqResponse">Frequency Response</a></li>
+        <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#efficiency">Efficiency</a></li>
+    </ul>
+
+    <div class="tab-content">
+        <div class="tab-pane fade show active" id="dcAnalysis">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header">DC Circuit Analysis</div>
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <label class="form-label">Voltage Sources (comma-separated, V)</label>
+                                <input type="text" class="form-control" id="dcVoltages" value="12" placeholder="e.g., 12, 5">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Resistances (comma-separated, Ω)</label>
+                                <input type="text" class="form-control" id="dcResistances" value="100, 200, 300" placeholder="e.g., 100, 200, 300">
+                            </div>
+                            <button class="btn btn-primary w-100" onclick="analyzeDC()">
+                                <i class="fas fa-cogs me-2"></i>Analyze
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card result-card">
+                        <div class="card-header">Results</div>
+                        <div class="card-body" id="dcResults">
+                            <p class="text-muted">Results will appear here...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="tab-pane fade" id="acAnalysis">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header">AC Circuit Analysis</div>
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <label class="form-label">Voltage Amplitude (V)</label>
+                                <input type="number" class="form-control" id="acVoltage" value="10">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Frequency (Hz)</label>
+                                <input type="number" class="form-control" id="acFrequency" value="1000">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Resistance (Ω)</label>
+                                <input type="number" class="form-control" id="acResistance" value="100">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Inductance (H)</label>
+                                <input type="number" class="form-control" id="acInductance" value="0.01" step="any">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Capacitance (F)</label>
+                                <input type="number" class="form-control" id="acCapacitance" value="0.000001" step="any">
+                            </div>
+                            <button class="btn btn-primary w-100" onclick="analyzeAC()">
+                                <i class="fas fa-cogs me-2"></i>Analyze
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card result-card">
+                        <div class="card-header">Results</div>
+                        <div class="card-body" id="acResults">
+                            <p class="text-muted">Results will appear here...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="tab-pane fade" id="freqResponse">
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="card">
+                        <div class="card-header">Frequency Response</div>
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <label class="form-label">Resistance (Ω)</label>
+                                <input type="number" class="form-control" id="frResistance" value="100">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Inductance (H)</label>
+                                <input type="number" class="form-control" id="frInductance" value="0.01" step="any">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Capacitance (F)</label>
+                                <input type="number" class="form-control" id="frCapacitance" value="0.000001" step="any">
+                            </div>
+                            <div class="row">
+                                <div class="col-6">
+                                    <label class="form-label">Start Freq (Hz)</label>
+                                    <input type="number" class="form-control" id="frStart" value="10">
+                                </div>
+                                <div class="col-6">
+                                    <label class="form-label">End Freq (Hz)</label>
+                                    <input type="number" class="form-control" id="frEnd" value="100000">
+                                </div>
+                            </div>
+                            <button class="btn btn-primary w-100 mt-3" onclick="analyzeFreqResponse()">
+                                <i class="fas fa-chart-line me-2"></i>Generate Plot
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-8">
+                    <div class="card">
+                        <div class="card-header">Bode Plot</div>
+                        <div class="card-body">
+                            <div id="bodePlot" class="plot-container" style="height: 400px;"></div>
+                            <div id="frInfo" class="mt-3"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="tab-pane fade" id="efficiency">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header">Efficiency Analysis</div>
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <label class="form-label">Input Power (W)</label>
+                                <input type="number" class="form-control" id="effInput" value="100">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Output Power (W)</label>
+                                <input type="number" class="form-control" id="effOutput" value="85">
+                            </div>
+                            <button class="btn btn-primary w-100" onclick="analyzeEfficiency()">
+                                <i class="fas fa-percentage me-2"></i>Calculate
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card result-card">
+                        <div class="card-header">Results</div>
+                        <div class="card-body" id="effResults">
+                            <p class="text-muted">Results will appear here...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    async function analyzeDC() {
+        const voltages = document.getElementById('dcVoltages').value.split(',').map(v => parseFloat(v.trim()));
+        const resistances = document.getElementById('dcResistances').value.split(',').map(r => parseFloat(r.trim()));
+
+        const response = await apiCall('/api/circuit/dc-analysis', 'POST', {
+            voltage_sources: voltages,
+            current_sources: [],
+            resistances: resistances,
+            connections: {}
+        });
+
+        displayCircuitResults('dcResults', response);
+    }
+
+    async function analyzeAC() {
+        const response = await apiCall('/api/circuit/ac-analysis', 'POST', {
+            voltage_amplitude: parseFloat(document.getElementById('acVoltage').value),
+            frequency: parseFloat(document.getElementById('acFrequency').value),
+            resistance: parseFloat(document.getElementById('acResistance').value),
+            inductance: parseFloat(document.getElementById('acInductance').value),
+            capacitance: parseFloat(document.getElementById('acCapacitance').value)
+        });
+
+        displayCircuitResults('acResults', response);
+    }
+
+    async function analyzeFreqResponse() {
+        const response = await apiCall('/api/circuit/frequency-response', 'POST', {
+            resistance: parseFloat(document.getElementById('frResistance').value),
+            inductance: parseFloat(document.getElementById('frInductance').value),
+            capacitance: parseFloat(document.getElementById('frCapacitance').value),
+            freq_start: parseFloat(document.getElementById('frStart').value),
+            freq_end: parseFloat(document.getElementById('frEnd').value),
+            points: 200
+        });
+
+        const result = response.result;
+
+        const gainTrace = {
+            x: result.frequencies,
+            y: result.gains_db,
+            type: 'scatter',
+            name: 'Gain (dB)',
+            line: { color: '#3498db' }
+        };
+
+        const phaseTrace = {
+            x: result.frequencies,
+            y: result.phases,
+            type: 'scatter',
+            name: 'Phase (deg)',
+            yaxis: 'y2',
+            line: { color: '#e74c3c' }
+        };
+
+        const layout = {
+            title: 'Bode Plot',
+            xaxis: { title: 'Frequency (Hz)', type: 'log' },
+            yaxis: { title: 'Gain (dB)', side: 'left' },
+            yaxis2: { title: 'Phase (deg)', side: 'right', overlaying: 'y' },
+            showlegend: true
+        };
+
+        Plotly.newPlot('bodePlot', [gainTrace, phaseTrace], layout);
+
+        let info = '';
+        if (result.resonant_frequency) {
+            info += `<div class="alert alert-info">
+                <strong>Resonant Frequency:</strong> ${formatNumber(result.resonant_frequency)} Hz<br>
+                <strong>Q Factor:</strong> ${formatNumber(result.q_factor)}<br>
+                <strong>Bandwidth:</strong> ${formatNumber(result.bandwidth)} Hz
+            </div>`;
+        }
+        document.getElementById('frInfo').innerHTML = info;
+    }
+
+    async function analyzeEfficiency() {
+        const response = await apiCall('/api/circuit/efficiency', 'POST', {
+            input_power: parseFloat(document.getElementById('effInput').value),
+            output_power: parseFloat(document.getElementById('effOutput').value)
+        });
+
+        displayCircuitResults('effResults', response);
+    }
+
+    function displayCircuitResults(elementId, response) {
+        let html = '';
+
+        if (response.result) {
+            html += '<div class="row">';
+            for (const [key, value] of Object.entries(response.result)) {
+                if (Array.isArray(value)) continue;
+                const label = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                html += `
+                    <div class="col-md-6 mb-3">
+                        <div class="p-3 bg-light rounded">
+                            <div class="result-label">${label}</div>
+                            <div class="result-value">${formatNumber(value)}</div>
+                        </div>
+                    </div>
+                `;
+            }
+            html += '</div>';
+        }
+
+        if (response.conclusion) {
+            html += `<div class="success-box"><i class="fas fa-check-circle me-2"></i>${response.conclusion}</div>`;
+        }
+
+        if (response.warnings && response.warnings.length > 0) {
+            html += `<div class="warning-box"><i class="fas fa-exclamation-triangle me-2"></i>${response.warnings.join('<br>')}</div>`;
+        }
+
+        document.getElementById(elementId).innerHTML = html || '<p class="text-muted">No results</p>';
+    }
+</script>
+{% endblock %}

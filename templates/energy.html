@@ -1,0 +1,278 @@
+{% extends "base.html" %}
+
+{% block title %}Energy Consumption Analyzer - ElectroHub{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <h2 class="mb-4"><i class="fas fa-bolt text-primary me-2"></i>Energy Consumption Analyzer</h2>
+
+    <div class="theory-panel">
+        <h6><i class="fas fa-lightbulb me-2"></i>Energy Analysis</h6>
+        <p class="mb-0">Load Factor = Average Load / Peak Load | Cost = Energy × Rate | Efficiency = Output / Input × 100%</p>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-header">Upload Energy Data (CSV)</div>
+                <div class="card-body">
+                    <form id="uploadForm" enctype="multipart/form-data">
+                        <div class="mb-3">
+                            <label class="form-label">CSV File</label>
+                            <input type="file" class="form-control" id="csvFile" accept=".csv" required>
+                            <small class="text-muted">File should contain time and power columns</small>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Cost per kWh ($)</label>
+                            <input type="number" class="form-control" id="costRate" value="0.12" step="any">
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="fas fa-upload me-2"></i>Analyze Data
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <div class="card mb-4">
+                <div class="card-header">Efficiency Calculator</div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label class="form-label">Input Energy (kWh)</label>
+                        <input type="number" class="form-control" id="effInput" value="100">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Output Energy (kWh)</label>
+                        <input type="number" class="form-control" id="effOutput" value="85">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Standby Power (W)</label>
+                        <input type="number" class="form-control" id="effStandby" value="5">
+                    </div>
+                    <button class="btn btn-primary w-100" onclick="calculateEfficiency()">
+                        <i class="fas fa-percentage me-2"></i>Calculate
+                    </button>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">Cost Estimation</div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label class="form-label">Energy (kWh)</label>
+                        <input type="number" class="form-control" id="costEnergy" value="500">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Rate Structure</label>
+                        <select class="form-select" id="rateStructure">
+                            <option value="flat">Flat Rate</option>
+                            <option value="tou">Time of Use</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Flat Rate ($/kWh)</label>
+                        <input type="number" class="form-control" id="flatRate" value="0.12" step="any">
+                    </div>
+                    <button class="btn btn-primary w-100" onclick="estimateCost()">
+                        <i class="fas fa-dollar-sign me-2"></i>Estimate
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-header">Analysis Results</div>
+                <div class="card-body" id="analysisResults">
+                    <p class="text-muted">Upload a CSV file to see analysis results...</p>
+                </div>
+            </div>
+
+            <div class="card mb-4">
+                <div class="card-header">Recommendations</div>
+                <div class="card-body" id="recommendations">
+                    <p class="text-muted">Recommendations will appear after analysis...</p>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">Calculation Results</div>
+                <div class="card-body" id="calcResults">
+                    <p class="text-muted">Results will appear here...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    Historical Analysis Data
+                    <button class="btn btn-sm btn-outline-primary float-end" onclick="loadHistory()">
+                        <i class="fas fa-sync me-1"></i>Refresh
+                    </button>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped" id="historyTable">
+                            <thead>
+                                <tr>
+                                    <th>Filename</th>
+                                    <th>Total Energy (kWh)</th>
+                                    <th>Peak Load (W)</th>
+                                    <th>Efficiency</th>
+                                    <th>Cost ($)</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr><td colspan="5" class="text-center text-muted">No data yet</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.getElementById('uploadForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        const formData = new FormData();
+        formData.append('file', document.getElementById('csvFile').files[0]);
+        formData.append('cost_per_kwh', document.getElementById('costRate').value);
+
+        try {
+            const response = await fetch('/api/energy/analyze', {
+                method: 'POST',
+                body: formData
+            });
+            const data = await response.json();
+
+            if (data.error) {
+                showToast(data.error, 'danger');
+                return;
+            }
+
+            displayAnalysisResults(data);
+            loadHistory();
+        } catch (error) {
+            showToast('Error analyzing file', 'danger');
+        }
+    });
+
+    function displayAnalysisResults(data) {
+        const result = data.result;
+        let html = `
+            <div class="row">
+                <div class="col-6 mb-3">
+                    <div class="stat-box">
+                        <h3>${formatNumber(result.total_energy_kwh)}</h3>
+                        <p>Total Energy (kWh)</p>
+                    </div>
+                </div>
+                <div class="col-6 mb-3">
+                    <div class="stat-box" style="background: linear-gradient(135deg, #e74c3c, #c0392b);">
+                        <h3>${formatNumber(result.peak_load_w)}</h3>
+                        <p>Peak Load (W)</p>
+                    </div>
+                </div>
+                <div class="col-6 mb-3">
+                    <div class="stat-box" style="background: linear-gradient(135deg, #27ae60, #1e8449);">
+                        <h3>${formatNumber(result.load_factor)}</h3>
+                        <p>Load Factor</p>
+                    </div>
+                </div>
+                <div class="col-6 mb-3">
+                    <div class="stat-box" style="background: linear-gradient(135deg, #f39c12, #d68910);">
+                        <h3>$${formatNumber(result.estimated_cost)}</h3>
+                        <p>Estimated Cost</p>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        if (data.warnings && data.warnings.length > 0) {
+            html += `<div class="warning-box"><i class="fas fa-exclamation-triangle me-2"></i>${data.warnings.join('<br>')}</div>`;
+        }
+
+        document.getElementById('analysisResults').innerHTML = html;
+
+        if (data.recommendations) {
+            let recHtml = '';
+            data.recommendations.forEach(rec => {
+                const badgeClass = rec.priority === 'High' ? 'danger' : rec.priority === 'Medium' ? 'warning' : 'info';
+                recHtml += `
+                    <div class="mb-3 p-3 border rounded">
+                        <span class="badge bg-${badgeClass} me-2">${rec.priority}</span>
+                        <strong>${rec.category}</strong><br>
+                        <small>${rec.recommendation}</small><br>
+                        <span class="text-success">Potential Savings: ${rec.potential_savings}</span>
+                    </div>
+                `;
+            });
+            document.getElementById('recommendations').innerHTML = recHtml;
+        }
+    }
+
+    async function calculateEfficiency() {
+        const response = await apiCall('/api/energy/efficiency', 'POST', {
+            input_energy: parseFloat(document.getElementById('effInput').value),
+            output_energy: parseFloat(document.getElementById('effOutput').value),
+            standby_power: parseFloat(document.getElementById('effStandby').value)
+        });
+
+        let html = '<div class="row">';
+        for (const [key, value] of Object.entries(response.result)) {
+            const label = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+            html += `
+                <div class="col-6 mb-2">
+                    <strong>${label}:</strong> ${formatNumber(value)}
+                </div>
+            `;
+        }
+        html += '</div>';
+        document.getElementById('calcResults').innerHTML = html;
+    }
+
+    async function estimateCost() {
+        const response = await apiCall('/api/energy/cost', 'POST', {
+            energy_kwh: parseFloat(document.getElementById('costEnergy').value),
+            rate_structure: document.getElementById('rateStructure').value,
+            flat_rate: parseFloat(document.getElementById('flatRate').value)
+        });
+
+        document.getElementById('calcResults').innerHTML = `
+            <div class="alert alert-success">
+                <h4>$${formatNumber(response.result.total_cost)}</h4>
+                <p class="mb-0">Estimated cost for ${response.result.total_energy_kwh} kWh</p>
+            </div>
+        `;
+    }
+
+    async function loadHistory() {
+        const response = await apiCall('/api/energy/history');
+        const tbody = document.querySelector('#historyTable tbody');
+        
+        if (response.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted">No data yet</td></tr>';
+            return;
+        }
+
+        tbody.innerHTML = response.map(row => `
+            <tr>
+                <td>${row.filename || 'N/A'}</td>
+                <td>${formatNumber(row.total_energy)}</td>
+                <td>${formatNumber(row.peak_load)}</td>
+                <td>${formatNumber(row.efficiency)}</td>
+                <td>$${formatNumber(row.cost)}</td>
+            </tr>
+        `).join('');
+    }
+
+    loadHistory();
+</script>
+{% endblock %}

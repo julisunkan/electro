@@ -1,0 +1,304 @@
+{% extends "base.html" %}
+
+{% block title %}Antenna & RF Design - ElectroHub{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <h2 class="mb-4"><i class="fas fa-broadcast-tower text-primary me-2"></i>Antenna & RF Design</h2>
+
+    <div class="theory-panel">
+        <h6><i class="fas fa-lightbulb me-2"></i>RF Fundamentals</h6>
+        <p class="mb-0">Wavelength λ = c/f | Free Space Impedance = 377Ω | Dipole gain ≈ 2.15 dBi | VSWR = (1+|Γ|)/(1-|Γ|)</p>
+    </div>
+
+    <ul class="nav nav-tabs mb-3">
+        <li class="nav-item"><a class="nav-link active" data-bs-toggle="tab" href="#freqWavelength">Freq/Wavelength</a></li>
+        <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#dipole">Dipole Antenna</a></li>
+        <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#yagi">Yagi Antenna</a></li>
+        <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#impedance">Impedance Matching</a></li>
+        <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#linkBudget">Link Budget</a></li>
+    </ul>
+
+    <div class="tab-content">
+        <div class="tab-pane fade show active" id="freqWavelength">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header">Frequency ↔ Wavelength Converter</div>
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <label class="form-label">Frequency (Hz)</label>
+                                <input type="number" class="form-control" id="fwFreq" value="144000000" placeholder="e.g., 144000000">
+                            </div>
+                            <button class="btn btn-primary w-100 mb-3" onclick="freqToWavelength()">
+                                <i class="fas fa-arrow-down me-2"></i>Convert to Wavelength
+                            </button>
+                            <hr>
+                            <div class="mb-3">
+                                <label class="form-label">Wavelength (m)</label>
+                                <input type="number" class="form-control" id="fwWavelength" step="any" placeholder="e.g., 2.08">
+                            </div>
+                            <button class="btn btn-primary w-100" onclick="wavelengthToFreq()">
+                                <i class="fas fa-arrow-up me-2"></i>Convert to Frequency
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card result-card">
+                        <div class="card-header">Results</div>
+                        <div class="card-body" id="fwResults">
+                            <p class="text-muted">Results will appear here...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="tab-pane fade" id="dipole">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header">Half-Wave Dipole Calculator</div>
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <label class="form-label">Operating Frequency (Hz)</label>
+                                <input type="number" class="form-control" id="dipoleFreq" value="144000000">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Wire Diameter (m)</label>
+                                <input type="number" class="form-control" id="dipoleWire" value="0.002" step="any">
+                            </div>
+                            <button class="btn btn-primary w-100" onclick="calculateDipole()">
+                                <i class="fas fa-calculator me-2"></i>Calculate
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card result-card">
+                        <div class="card-header">Dipole Specifications</div>
+                        <div class="card-body" id="dipoleResults">
+                            <p class="text-muted">Results will appear here...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="tab-pane fade" id="yagi">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header">Yagi-Uda Antenna Calculator</div>
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <label class="form-label">Operating Frequency (Hz)</label>
+                                <input type="number" class="form-control" id="yagiFreq" value="144000000">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Number of Elements</label>
+                                <input type="number" class="form-control" id="yagiElements" value="5" min="3">
+                            </div>
+                            <button class="btn btn-primary w-100" onclick="calculateYagi()">
+                                <i class="fas fa-calculator me-2"></i>Calculate
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card result-card">
+                        <div class="card-header">Yagi Specifications</div>
+                        <div class="card-body" id="yagiResults">
+                            <p class="text-muted">Results will appear here...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="tab-pane fade" id="impedance">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header">Impedance Matching</div>
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <label class="form-label">Source Impedance (Ω)</label>
+                                <input type="number" class="form-control" id="impSource" value="50">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Load Impedance (Ω)</label>
+                                <input type="number" class="form-control" id="impLoad" value="73">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Frequency (Hz)</label>
+                                <input type="number" class="form-control" id="impFreq" value="144000000">
+                            </div>
+                            <button class="btn btn-primary w-100" onclick="calculateImpedance()">
+                                <i class="fas fa-calculator me-2"></i>Calculate Match
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card result-card">
+                        <div class="card-header">Matching Results</div>
+                        <div class="card-body" id="impResults">
+                            <p class="text-muted">Results will appear here...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="tab-pane fade" id="linkBudget">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header">RF Link Budget Calculator</div>
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <label class="form-label">TX Power (dBm)</label>
+                                <input type="number" class="form-control" id="lbTxPower" value="30">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">TX Antenna Gain (dBi)</label>
+                                <input type="number" class="form-control" id="lbTxGain" value="6">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">RX Antenna Gain (dBi)</label>
+                                <input type="number" class="form-control" id="lbRxGain" value="6">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Distance (km)</label>
+                                <input type="number" class="form-control" id="lbDistance" value="10" step="any">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Frequency (Hz)</label>
+                                <input type="number" class="form-control" id="lbFreq" value="144000000">
+                            </div>
+                            <button class="btn btn-primary w-100" onclick="calculateLinkBudget()">
+                                <i class="fas fa-satellite-dish me-2"></i>Calculate
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card result-card">
+                        <div class="card-header">Link Budget Results</div>
+                        <div class="card-body" id="lbResults">
+                            <p class="text-muted">Results will appear here...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card mt-4">
+        <div class="card-header">RF Constants Reference</div>
+        <div class="card-body">
+            <div class="row">
+                {% for name, value in rf_constants.items() %}
+                <div class="col-md-3 mb-2">
+                    <strong>{{ name.replace('_', ' ').title() }}:</strong> {{ "%.4g"|format(value) }}
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    async function freqToWavelength() {
+        const freq = parseFloat(document.getElementById('fwFreq').value);
+        const response = await apiCall('/api/antenna/frequency-wavelength', 'POST', { frequency: freq });
+        displayRFResults('fwResults', response.result);
+    }
+
+    async function wavelengthToFreq() {
+        const wl = parseFloat(document.getElementById('fwWavelength').value);
+        const response = await apiCall('/api/antenna/frequency-wavelength', 'POST', { wavelength: wl });
+        displayRFResults('fwResults', response.result);
+    }
+
+    async function calculateDipole() {
+        const response = await apiCall('/api/antenna/dipole', 'POST', {
+            frequency: parseFloat(document.getElementById('dipoleFreq').value),
+            wire_diameter: parseFloat(document.getElementById('dipoleWire').value)
+        });
+        displayAntennaResults('dipoleResults', response);
+    }
+
+    async function calculateYagi() {
+        const response = await apiCall('/api/antenna/yagi', 'POST', {
+            frequency: parseFloat(document.getElementById('yagiFreq').value),
+            num_elements: parseInt(document.getElementById('yagiElements').value)
+        });
+        displayAntennaResults('yagiResults', response);
+    }
+
+    async function calculateImpedance() {
+        const response = await apiCall('/api/antenna/impedance', 'POST', {
+            source_impedance: parseFloat(document.getElementById('impSource').value),
+            load_impedance: parseFloat(document.getElementById('impLoad').value),
+            frequency: parseFloat(document.getElementById('impFreq').value)
+        });
+        displayAntennaResults('impResults', response);
+    }
+
+    async function calculateLinkBudget() {
+        const response = await apiCall('/api/antenna/link-budget', 'POST', {
+            tx_power_dbm: parseFloat(document.getElementById('lbTxPower').value),
+            tx_gain_dbi: parseFloat(document.getElementById('lbTxGain').value),
+            rx_gain_dbi: parseFloat(document.getElementById('lbRxGain').value),
+            distance_km: parseFloat(document.getElementById('lbDistance').value),
+            frequency: parseFloat(document.getElementById('lbFreq').value)
+        });
+        displayAntennaResults('lbResults', response);
+    }
+
+    function displayRFResults(elementId, result) {
+        let html = '<div class="row">';
+        for (const [key, value] of Object.entries(result)) {
+            const label = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+            html += `
+                <div class="col-md-6 mb-3">
+                    <div class="p-3 bg-light rounded">
+                        <div class="result-label">${label}</div>
+                        <div class="result-value">${formatNumber(value)}</div>
+                    </div>
+                </div>
+            `;
+        }
+        html += '</div>';
+        document.getElementById(elementId).innerHTML = html;
+    }
+
+    function displayAntennaResults(elementId, response) {
+        let html = '<div class="row">';
+        for (const [key, value] of Object.entries(response.result)) {
+            if (typeof value === 'object') continue;
+            const label = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+            html += `
+                <div class="col-md-6 mb-3">
+                    <div class="p-3 bg-light rounded">
+                        <div class="result-label">${label}</div>
+                        <div class="result-value">${formatNumber(value)}</div>
+                    </div>
+                </div>
+            `;
+        }
+        html += '</div>';
+
+        if (response.warnings && response.warnings.length > 0) {
+            html += `<div class="warning-box"><i class="fas fa-exclamation-triangle me-2"></i>${response.warnings.join('<br>')}</div>`;
+        }
+
+        document.getElementById(elementId).innerHTML = html;
+    }
+</script>
+{% endblock %}

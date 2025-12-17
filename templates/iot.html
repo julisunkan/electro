@@ -1,0 +1,306 @@
+{% extends "base.html" %}
+
+{% block title %}IoT Monitoring - ElectroHub{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <h2 class="mb-4"><i class="fas fa-network-wired text-primary me-2"></i>IoT Sensor Monitoring</h2>
+
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="stat-box">
+                <h3 id="deviceCount">{{ devices|length }}</h3>
+                <p>Connected Devices</p>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-box" style="background: linear-gradient(135deg, #27ae60, #1e8449);">
+                <h3 id="readingCount">0</h3>
+                <p>Total Readings</p>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-box" style="background: linear-gradient(135deg, #e74c3c, #c0392b);">
+                <h3 id="alertCount">0</h3>
+                <p>Active Alerts</p>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-box" style="background: linear-gradient(135deg, #f39c12, #d68910);">
+                <h3 id="lastUpdate">--</h3>
+                <p>Last Update</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-4">
+            <div class="card mb-4">
+                <div class="card-header">Device Simulator</div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label class="form-label">Select Device</label>
+                        <select class="form-select" id="simDevice">
+                            {% for device_id, device in devices.items() %}
+                            <option value="{{ device_id }}">{{ device_id }} ({{ device.type }})</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <button class="btn btn-primary w-100 mb-2" onclick="simulateReading()">
+                        <i class="fas fa-random me-2"></i>Simulate Reading
+                    </button>
+                    <button class="btn btn-warning w-100" onclick="simulateBatch()">
+                        <i class="fas fa-sync me-2"></i>Simulate Batch (All Devices)
+                    </button>
+                </div>
+            </div>
+
+            <div class="card mb-4">
+                <div class="card-header">Manual Data Entry</div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label class="form-label">Sensor ID</label>
+                        <input type="text" class="form-control" id="manualSensor" placeholder="e.g., temp_sensor_1">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Value</label>
+                        <input type="number" class="form-control" id="manualValue" step="any">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Sensor Type</label>
+                        <select class="form-select" id="manualType">
+                            {% for type in thresholds.keys() %}
+                            <option value="{{ type }}">{{ type }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <button class="btn btn-success w-100" onclick="sendManualData()">
+                        <i class="fas fa-paper-plane me-2"></i>Send Data
+                    </button>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">Thresholds</div>
+                <div class="card-body" style="max-height: 300px; overflow-y: auto;">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr><th>Type</th><th>Alert High</th><th>Alert Low</th></tr>
+                        </thead>
+                        <tbody>
+                            {% for type, thresh in thresholds.items() %}
+                            <tr>
+                                <td>{{ type }}</td>
+                                <td>{{ thresh.alert_high }} {{ thresh.unit }}</td>
+                                <td>{{ thresh.alert_low }} {{ thresh.unit }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-8">
+            <div class="card mb-4">
+                <div class="card-header">
+                    Live Sensor Data
+                    <button class="btn btn-sm btn-outline-primary float-end" onclick="refreshData()">
+                        <i class="fas fa-sync"></i>
+                    </button>
+                </div>
+                <div class="card-body">
+                    <div id="sensorPlot" style="height: 300px;"></div>
+                </div>
+            </div>
+
+            <div class="card mb-4">
+                <div class="card-header">
+                    Recent Readings
+                    <a href="/api/iot/export?format=csv" class="btn btn-sm btn-outline-success float-end">
+                        <i class="fas fa-download me-1"></i>Export CSV
+                    </a>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive" style="max-height: 300px; overflow-y: auto;">
+                        <table class="table table-striped table-sm" id="readingsTable">
+                            <thead>
+                                <tr>
+                                    <th>Sensor</th>
+                                    <th>Value</th>
+                                    <th>Unit</th>
+                                    <th>Status</th>
+                                    <th>Time</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr><td colspan="5" class="text-center text-muted">No readings yet</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">Active Alerts</div>
+                <div class="card-body" id="alertsContainer">
+                    <p class="text-muted">No active alerts</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    let sensorData = {};
+
+    async function simulateReading() {
+        const deviceId = document.getElementById('simDevice').value;
+        const response = await apiCall('/api/iot/simulate', 'POST', { sensor_id: deviceId });
+        
+        if (response.result) {
+            addReading(response.result);
+            showToast(`Reading simulated: ${response.result.value} ${response.result.unit}`);
+            
+            if (response.result.alert) {
+                showToast(response.result.alert_message, 'danger');
+            }
+        }
+    }
+
+    async function simulateBatch() {
+        const response = await apiCall('/api/iot/simulate-batch', 'POST', { num_readings: 1 });
+        
+        if (response.results) {
+            response.results.forEach(reading => addReading(reading));
+            showToast(`${response.results.length} readings simulated`);
+            refreshData();
+        }
+    }
+
+    async function sendManualData() {
+        const response = await apiCall('/api/iot/data', 'POST', {
+            sensor_id: document.getElementById('manualSensor').value,
+            value: parseFloat(document.getElementById('manualValue').value),
+            sensor_type: document.getElementById('manualType').value
+        });
+
+        if (response.result) {
+            addReading(response.result);
+            showToast('Data sent successfully!');
+        }
+    }
+
+    function addReading(reading) {
+        const sensor = reading.sensor_id || reading.sensor;
+        if (!sensorData[sensor]) {
+            sensorData[sensor] = { times: [], values: [] };
+        }
+        
+        sensorData[sensor].times.push(new Date());
+        sensorData[sensor].values.push(reading.value);
+        
+        if (sensorData[sensor].times.length > 50) {
+            sensorData[sensor].times.shift();
+            sensorData[sensor].values.shift();
+        }
+        
+        updatePlot();
+        updateTable(reading);
+        updateStats();
+    }
+
+    function updatePlot() {
+        const traces = [];
+        for (const [sensor, data] of Object.entries(sensorData)) {
+            traces.push({
+                x: data.times,
+                y: data.values,
+                type: 'scatter',
+                mode: 'lines+markers',
+                name: sensor
+            });
+        }
+
+        const layout = {
+            title: 'Sensor Readings Over Time',
+            xaxis: { title: 'Time' },
+            yaxis: { title: 'Value' },
+            showlegend: true
+        };
+
+        Plotly.newPlot('sensorPlot', traces, layout);
+    }
+
+    function updateTable(reading) {
+        const tbody = document.querySelector('#readingsTable tbody');
+        const row = document.createElement('tr');
+        const statusBadge = reading.alert ? 
+            '<span class="badge bg-danger">ALERT</span>' : 
+            '<span class="badge bg-success">Normal</span>';
+        
+        row.innerHTML = `
+            <td>${reading.sensor_id || reading.sensor}</td>
+            <td>${formatNumber(reading.value)}</td>
+            <td>${reading.unit}</td>
+            <td>${statusBadge}</td>
+            <td>${new Date().toLocaleTimeString()}</td>
+        `;
+        
+        if (tbody.querySelector('.text-muted')) {
+            tbody.innerHTML = '';
+        }
+        tbody.insertBefore(row, tbody.firstChild);
+        
+        while (tbody.children.length > 20) {
+            tbody.removeChild(tbody.lastChild);
+        }
+    }
+
+    async function updateStats() {
+        const history = await apiCall('/api/iot/history?limit=100');
+        const alerts = await apiCall('/api/iot/alerts');
+        
+        document.getElementById('readingCount').textContent = history.history ? history.history.length : 0;
+        document.getElementById('alertCount').textContent = alerts.alerts ? alerts.alerts.length : 0;
+        document.getElementById('lastUpdate').textContent = new Date().toLocaleTimeString();
+        
+        if (alerts.alerts && alerts.alerts.length > 0) {
+            let alertHtml = '';
+            alerts.alerts.slice(0, 5).forEach(alert => {
+                alertHtml += `
+                    <div class="danger-box mb-2">
+                        <strong>${alert.sensor}</strong>: ${alert.value} ${alert.unit}
+                        <small class="float-end">${alert.timestamp}</small>
+                    </div>
+                `;
+            });
+            document.getElementById('alertsContainer').innerHTML = alertHtml;
+        }
+    }
+
+    async function refreshData() {
+        const history = await apiCall('/api/iot/history?limit=50');
+        
+        if (history.history) {
+            sensorData = {};
+            history.history.reverse().forEach(reading => {
+                const sensor = reading.sensor;
+                if (!sensorData[sensor]) {
+                    sensorData[sensor] = { times: [], values: [] };
+                }
+                sensorData[sensor].times.push(new Date(reading.timestamp));
+                sensorData[sensor].values.push(reading.value);
+            });
+            updatePlot();
+        }
+        
+        updateStats();
+    }
+
+    refreshData();
+    setInterval(updateStats, 30000);
+</script>
+{% endblock %}

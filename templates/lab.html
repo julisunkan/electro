@@ -1,0 +1,273 @@
+{% extends "base.html" %}
+
+{% block title %}Virtual Electronics Lab - ElectroHub{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <h2 class="mb-4"><i class="fas fa-flask text-primary me-2"></i>Virtual Electronics Lab</h2>
+
+    <div class="row">
+        <div class="col-md-4">
+            <div class="card mb-4">
+                <div class="card-header">Select Experiment</div>
+                <div class="card-body">
+                    {% for exp_id, exp in experiments.items() %}
+                    <div class="experiment-card card mb-2 p-3" onclick="selectExperiment('{{ exp_id }}')" id="exp_{{ exp_id }}">
+                        <h6 class="mb-1">{{ exp.name }}</h6>
+                        <small class="text-muted">{{ exp.description }}</small>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">Theory & Help</div>
+                <div class="card-body" id="theoryPanel">
+                    <p class="text-muted">Select an experiment to view theory...</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-8">
+            <div class="card mb-4">
+                <div class="card-header">Experiment Parameters</div>
+                <div class="card-body" id="parametersPanel">
+                    <p class="text-muted">Select an experiment to configure parameters...</p>
+                </div>
+            </div>
+
+            <div class="card mb-4">
+                <div class="card-header">Results Visualization</div>
+                <div class="card-body">
+                    <div id="labPlot" style="height: 400px;"></div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    Experiment Results & Conclusion
+                    <button class="btn btn-sm btn-success float-end" onclick="generateLabReport()" id="reportBtn" style="display:none;">
+                        <i class="fas fa-file-pdf me-1"></i>Generate PDF Report
+                    </button>
+                </div>
+                <div class="card-body" id="resultsPanel">
+                    <p class="text-muted">Run an experiment to see results...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    let currentExperiment = null;
+    let lastResult = null;
+
+    const experimentParams = {
+        'rc_transient': {
+            fields: [
+                { name: 'resistance', label: 'Resistance (Ω)', default: 1000 },
+                { name: 'capacitance', label: 'Capacitance (F)', default: 0.000001 },
+                { name: 'voltage', label: 'Voltage (V)', default: 5 }
+            ]
+        },
+        'rlc_resonance': {
+            fields: [
+                { name: 'resistance', label: 'Resistance (Ω)', default: 100 },
+                { name: 'inductance', label: 'Inductance (H)', default: 0.01 },
+                { name: 'capacitance', label: 'Capacitance (F)', default: 0.000001 }
+            ]
+        },
+        'diode_characteristics': {
+            fields: [
+                { name: 'saturation_current', label: 'Saturation Current (A)', default: 1e-12 },
+                { name: 'ideality_factor', label: 'Ideality Factor', default: 1 },
+                { name: 'temperature', label: 'Temperature (K)', default: 300 }
+            ]
+        },
+        'amplifier_gain': {
+            fields: [
+                { name: 'dc_gain', label: 'DC Gain', default: 100 },
+                { name: 'bandwidth', label: 'Bandwidth (Hz)', default: 1000000 },
+                { name: 'input_impedance', label: 'Input Impedance (Ω)', default: 10000 }
+            ]
+        }
+    };
+
+    async function selectExperiment(expId) {
+        document.querySelectorAll('.experiment-card').forEach(el => el.classList.remove('selected'));
+        document.getElementById('exp_' + expId).classList.add('selected');
+        currentExperiment = expId;
+        
+        const response = await apiCall('/api/lab/theory?experiment=' + expId);
+        const theory = response.theory;
+        
+        document.getElementById('theoryPanel').innerHTML = `
+            <h6>${theory.name}</h6>
+            <p>${theory.description}</p>
+            <div class="alert alert-info">
+                <strong>Theory:</strong><br>
+                ${theory.theory}
+            </div>
+        `;
+        
+        const params = experimentParams[expId];
+        let html = '<form id="expForm">';
+        params.fields.forEach(field => {
+            html += `
+                <div class="mb-3">
+                    <label class="form-label">${field.label}</label>
+                    <input type="number" class="form-control" id="param_${field.name}" 
+                           value="${field.default}" step="any">
+                </div>
+            `;
+        });
+        html += `
+            <div class="mb-3 form-check">
+                <input type="checkbox" class="form-check-input" id="withTolerance">
+                <label class="form-check-label">Add Component Tolerance (±5%)</label>
+            </div>
+            <button type="button" class="btn btn-primary w-100" onclick="runExperiment()">
+                <i class="fas fa-play me-2"></i>Run Experiment
+            </button>
+        </form>`;
+        
+        document.getElementById('parametersPanel').innerHTML = html;
+    }
+
+    async function runExperiment() {
+        if (!currentExperiment) {
+            showToast('Please select an experiment first', 'warning');
+            return;
+        }
+
+        const params = {};
+        experimentParams[currentExperiment].fields.forEach(field => {
+            params[field.name] = parseFloat(document.getElementById('param_' + field.name).value);
+        });
+
+        const withTolerance = document.getElementById('withTolerance').checked;
+
+        const response = await apiCall('/api/lab/run', 'POST', {
+            experiment: currentExperiment,
+            parameters: params,
+            with_tolerance: withTolerance,
+            tolerance_percent: 5
+        });
+
+        lastResult = response.result;
+        displayResults(response.result);
+        plotResults(response.result);
+        document.getElementById('reportBtn').style.display = 'inline-block';
+    }
+
+    function displayResults(result) {
+        let html = '<div class="row">';
+        
+        const skipKeys = ['experiment', 'parameters', 'charging', 'discharging', 'frequency_response', 
+                         'forward_characteristics', 'reverse_characteristics', 'conclusion',
+                         'tolerance_applied', 'actual_parameters', 'nominal_parameters', 'key_times'];
+
+        for (const [key, value] of Object.entries(result)) {
+            if (skipKeys.includes(key) || typeof value === 'object') continue;
+            const label = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+            html += `
+                <div class="col-md-4 mb-3">
+                    <div class="p-3 bg-light rounded">
+                        <div class="result-label">${label}</div>
+                        <div class="result-value">${formatNumber(value)}</div>
+                    </div>
+                </div>
+            `;
+        }
+        html += '</div>';
+
+        if (result.conclusion) {
+            html += `
+                <div class="success-box mt-3">
+                    <h6><i class="fas fa-check-circle me-2"></i>Conclusion</h6>
+                    <p class="mb-0">${result.conclusion}</p>
+                </div>
+            `;
+        }
+
+        if (result.tolerance_applied) {
+            html += `
+                <div class="warning-box">
+                    <i class="fas fa-info-circle me-2"></i>
+                    Component tolerance of ±${result.tolerance_applied}% was applied to simulate real-world conditions.
+                </div>
+            `;
+        }
+
+        document.getElementById('resultsPanel').innerHTML = html;
+    }
+
+    function plotResults(result) {
+        const traces = [];
+        const layout = { showlegend: true };
+
+        if (result.charging && result.discharging) {
+            traces.push({
+                x: result.charging.time,
+                y: result.charging.voltage,
+                type: 'scatter',
+                name: 'Charging Voltage',
+                line: { color: '#3498db' }
+            });
+            traces.push({
+                x: result.discharging.time,
+                y: result.discharging.voltage,
+                type: 'scatter',
+                name: 'Discharging Voltage',
+                line: { color: '#e74c3c' }
+            });
+            layout.title = 'RC Transient Response';
+            layout.xaxis = { title: 'Time (s)' };
+            layout.yaxis = { title: 'Voltage (V)' };
+        }
+        else if (result.frequency_response) {
+            const fr = result.frequency_response;
+            traces.push({
+                x: fr.frequencies,
+                y: fr.gains_db,
+                type: 'scatter',
+                name: 'Gain (dB)',
+                line: { color: '#3498db' }
+            });
+            layout.title = 'Frequency Response';
+            layout.xaxis = { title: 'Frequency (Hz)', type: 'log' };
+            layout.yaxis = { title: 'Gain (dB)' };
+        }
+        else if (result.forward_characteristics) {
+            traces.push({
+                x: result.forward_characteristics.voltage,
+                y: result.forward_characteristics.current,
+                type: 'scatter',
+                name: 'Forward I-V',
+                line: { color: '#27ae60' }
+            });
+            layout.title = 'Diode I-V Characteristics';
+            layout.xaxis = { title: 'Voltage (V)' };
+            layout.yaxis = { title: 'Current (A)' };
+        }
+
+        if (traces.length > 0) {
+            Plotly.newPlot('labPlot', traces, layout);
+        }
+    }
+
+    async function generateLabReport() {
+        if (!lastResult) {
+            showToast('Run an experiment first', 'warning');
+            return;
+        }
+
+        const response = await apiCall('/api/lab/report', 'POST', { result: lastResult });
+        if (response.filepath) {
+            showToast('Lab report generated successfully!');
+        }
+    }
+</script>
+{% endblock %}

@@ -1,0 +1,159 @@
+{% extends "base.html" %}
+
+{% block title %}ElectroHub - Electronics Engineering Platform{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h1 class="display-5 mb-3"><i class="fas fa-microchip text-primary me-3"></i>Welcome to ElectroHub</h1>
+            <p class="lead text-muted">Your all-in-one Electronics Engineering Web Platform</p>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-md-4 col-lg-3">
+            <a href="/calculator" class="text-decoration-none">
+                <div class="card module-card h-100">
+                    <div class="card-body">
+                        <i class="fas fa-calculator"></i>
+                        <h5>Electronics Calculator</h5>
+                        <p>Ohm's law, RC/RL/RLC circuits, filters, amplifier gain, tolerance analysis</p>
+                    </div>
+                </div>
+            </a>
+        </div>
+
+        <div class="col-md-4 col-lg-3">
+            <a href="/circuit" class="text-decoration-none">
+                <div class="card module-card h-100">
+                    <div class="card-body">
+                        <i class="fas fa-project-diagram"></i>
+                        <h5>Circuit Analysis</h5>
+                        <p>DC/AC analysis, frequency response, efficiency calculations</p>
+                    </div>
+                </div>
+            </a>
+        </div>
+
+        <div class="col-md-4 col-lg-3">
+            <a href="/signal" class="text-decoration-none">
+                <div class="card module-card h-100">
+                    <div class="card-body">
+                        <i class="fas fa-wave-square"></i>
+                        <h5>Signal Processing</h5>
+                        <p>Signal generator, FFT analysis, noise injection, filtering</p>
+                    </div>
+                </div>
+            </a>
+        </div>
+
+        <div class="col-md-4 col-lg-3">
+            <a href="/antenna" class="text-decoration-none">
+                <div class="card module-card h-100">
+                    <div class="card-body">
+                        <i class="fas fa-broadcast-tower"></i>
+                        <h5>Antenna & RF Design</h5>
+                        <p>Dipole/Yagi antennas, impedance matching, link budget</p>
+                    </div>
+                </div>
+            </a>
+        </div>
+
+        <div class="col-md-4 col-lg-3">
+            <a href="/solar" class="text-decoration-none">
+                <div class="card module-card h-100">
+                    <div class="card-body">
+                        <i class="fas fa-solar-panel"></i>
+                        <h5>Solar & Energy Design</h5>
+                        <p>Panel sizing, battery & inverter calculations, ROI analysis</p>
+                    </div>
+                </div>
+            </a>
+        </div>
+
+        <div class="col-md-4 col-lg-3">
+            <a href="/energy" class="text-decoration-none">
+                <div class="card module-card h-100">
+                    <div class="card-body">
+                        <i class="fas fa-bolt"></i>
+                        <h5>Energy Analyzer</h5>
+                        <p>CSV upload, peak detection, cost estimation, efficiency</p>
+                    </div>
+                </div>
+            </a>
+        </div>
+
+        <div class="col-md-4 col-lg-3">
+            <a href="/iot" class="text-decoration-none">
+                <div class="card module-card h-100">
+                    <div class="card-body">
+                        <i class="fas fa-network-wired"></i>
+                        <h5>IoT Monitoring</h5>
+                        <p>Sensor data ingestion, threshold alerts, device simulator</p>
+                    </div>
+                </div>
+            </a>
+        </div>
+
+        <div class="col-md-4 col-lg-3">
+            <a href="/lab" class="text-decoration-none">
+                <div class="card module-card h-100">
+                    <div class="card-body">
+                        <i class="fas fa-flask"></i>
+                        <h5>Virtual Electronics Lab</h5>
+                        <p>RC transient, RLC resonance, diode & amplifier experiments</p>
+                    </div>
+                </div>
+            </a>
+        </div>
+    </div>
+
+    <div class="row mt-5">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <i class="fas fa-info-circle me-2"></i>About ElectroHub
+                </div>
+                <div class="card-body">
+                    <p>ElectroHub is a comprehensive electronics engineering platform designed for students, engineers, and hobbyists. It provides:</p>
+                    <ul>
+                        <li>Advanced calculators for electronic circuits</li>
+                        <li>Interactive signal processing tools</li>
+                        <li>RF and antenna design utilities</li>
+                        <li>Solar system sizing and ROI analysis</li>
+                        <li>IoT sensor monitoring capabilities</li>
+                        <li>Virtual laboratory experiments</li>
+                    </ul>
+                    <p class="mb-0"><strong>No login required</strong> - Start using immediately!</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <i class="fas fa-book me-2"></i>Engineering Constants
+                </div>
+                <div class="card-body">
+                    <table class="table table-sm constants-table">
+                        <thead>
+                            <tr>
+                                <th>Constant</th>
+                                <th>Value</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>Speed of Light (c)</td><td>2.998 x 10<sup>8</sup> m/s</td></tr>
+                            <tr><td>Electron Charge (e)</td><td>1.602 x 10<sup>-19</sup> C</td></tr>
+                            <tr><td>Boltzmann Constant (k)</td><td>1.381 x 10<sup>-23</sup> J/K</td></tr>
+                            <tr><td>Permittivity (ε₀)</td><td>8.854 x 10<sup>-12</sup> F/m</td></tr>
+                            <tr><td>Permeability (μ₀)</td><td>1.257 x 10<sup>-6</sup> H/m</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

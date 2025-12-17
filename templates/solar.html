@@ -1,0 +1,314 @@
+{% extends "base.html" %}
+
+{% block title %}Solar & Energy Design - ElectroHub{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <h2 class="mb-4"><i class="fas fa-solar-panel text-primary me-2"></i>Solar & Energy System Design</h2>
+
+    <div class="theory-panel">
+        <h6><i class="fas fa-lightbulb me-2"></i>Solar System Basics</h6>
+        <p class="mb-0">Daily Energy = Panel Capacity × Peak Sun Hours × Efficiency | Battery Capacity = Daily Load × Autonomy Days / DoD</p>
+    </div>
+
+    <ul class="nav nav-tabs mb-3">
+        <li class="nav-item"><a class="nav-link active" data-bs-toggle="tab" href="#panelSizing">Panel Sizing</a></li>
+        <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#batterySizing">Battery Sizing</a></li>
+        <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#inverterSizing">Inverter Sizing</a></li>
+        <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#losses">System Losses</a></li>
+        <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#roi">ROI Analysis</a></li>
+    </ul>
+
+    <div class="tab-content">
+        <div class="tab-pane fade show active" id="panelSizing">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header">Solar Panel Sizing</div>
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <label class="form-label">Daily Energy Requirement (kWh)</label>
+                                <input type="number" class="form-control" id="psEnergy" value="30" step="any">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Peak Sun Hours</label>
+                                <input type="number" class="form-control" id="psSunHours" value="4.5" step="any">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">System Efficiency</label>
+                                <input type="number" class="form-control" id="psEfficiency" value="0.8" step="any">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Panel Wattage (W)</label>
+                                <input type="number" class="form-control" id="psWattage" value="400">
+                            </div>
+                            <button class="btn btn-primary w-100" onclick="calculatePanelSizing()">
+                                <i class="fas fa-calculator me-2"></i>Calculate
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card result-card">
+                        <div class="card-header">Results</div>
+                        <div class="card-body" id="psResults">
+                            <p class="text-muted">Results will appear here...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="tab-pane fade" id="batterySizing">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header">Battery Bank Sizing</div>
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <label class="form-label">Daily Energy (kWh)</label>
+                                <input type="number" class="form-control" id="bsEnergy" value="30" step="any">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Autonomy Days</label>
+                                <input type="number" class="form-control" id="bsDays" value="2">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Depth of Discharge</label>
+                                <input type="number" class="form-control" id="bsDOD" value="0.8" step="any">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Battery Voltage (V)</label>
+                                <input type="number" class="form-control" id="bsVoltage" value="48">
+                            </div>
+                            <button class="btn btn-primary w-100" onclick="calculateBatterySizing()">
+                                <i class="fas fa-battery-full me-2"></i>Calculate
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card result-card">
+                        <div class="card-header">Results</div>
+                        <div class="card-body" id="bsResults">
+                            <p class="text-muted">Results will appear here...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="tab-pane fade" id="inverterSizing">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header">Inverter Sizing</div>
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <label class="form-label">Peak Load (W)</label>
+                                <input type="number" class="form-control" id="isPeakLoad" value="5000">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Surge Factor</label>
+                                <input type="number" class="form-control" id="isSurge" value="1.25" step="any">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Continuous Factor</label>
+                                <input type="number" class="form-control" id="isContinuous" value="1.1" step="any">
+                            </div>
+                            <button class="btn btn-primary w-100" onclick="calculateInverterSizing()">
+                                <i class="fas fa-plug me-2"></i>Calculate
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card result-card">
+                        <div class="card-header">Results</div>
+                        <div class="card-body" id="isResults">
+                            <p class="text-muted">Results will appear here...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="tab-pane fade" id="losses">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header">System Losses Calculator</div>
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <label class="form-label">Panel Capacity (kW)</label>
+                                <input type="number" class="form-control" id="slCapacity" value="10" step="any">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Soiling Loss (%)</label>
+                                <input type="number" class="form-control" id="slSoiling" value="2" step="any">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Shading Loss (%)</label>
+                                <input type="number" class="form-control" id="slShading" value="3" step="any">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Wiring Loss (%)</label>
+                                <input type="number" class="form-control" id="slWiring" value="2" step="any">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Inverter Loss (%)</label>
+                                <input type="number" class="form-control" id="slInverter" value="4" step="any">
+                            </div>
+                            <button class="btn btn-primary w-100" onclick="calculateLosses()">
+                                <i class="fas fa-calculator me-2"></i>Calculate
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card result-card">
+                        <div class="card-header">Results</div>
+                        <div class="card-body" id="slResults">
+                            <p class="text-muted">Results will appear here...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="tab-pane fade" id="roi">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header">ROI Analysis</div>
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <label class="form-label">System Cost ($)</label>
+                                <input type="number" class="form-control" id="roiCost" value="15000">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Annual Production (kWh)</label>
+                                <input type="number" class="form-control" id="roiProduction" value="12000">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Electricity Rate ($/kWh)</label>
+                                <input type="number" class="form-control" id="roiRate" value="0.12" step="any">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Incentives/Rebates ($)</label>
+                                <input type="number" class="form-control" id="roiIncentives" value="3000">
+                            </div>
+                            <button class="btn btn-primary w-100 mb-2" onclick="calculateROI()">
+                                <i class="fas fa-chart-line me-2"></i>Calculate ROI
+                            </button>
+                            <button class="btn btn-success w-100" onclick="generateReport()">
+                                <i class="fas fa-file-pdf me-2"></i>Generate PDF Report
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card result-card">
+                        <div class="card-header">Results</div>
+                        <div class="card-body" id="roiResults">
+                            <p class="text-muted">Results will appear here...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    async function calculatePanelSizing() {
+        const response = await apiCall('/api/solar/panel-sizing', 'POST', {
+            daily_energy_kwh: parseFloat(document.getElementById('psEnergy').value),
+            peak_sun_hours: parseFloat(document.getElementById('psSunHours').value),
+            system_efficiency: parseFloat(document.getElementById('psEfficiency').value),
+            panel_wattage: parseFloat(document.getElementById('psWattage').value)
+        });
+        displaySolarResults('psResults', response);
+    }
+
+    async function calculateBatterySizing() {
+        const response = await apiCall('/api/solar/battery-sizing', 'POST', {
+            daily_energy_kwh: parseFloat(document.getElementById('bsEnergy').value),
+            autonomy_days: parseFloat(document.getElementById('bsDays').value),
+            depth_of_discharge: parseFloat(document.getElementById('bsDOD').value),
+            battery_voltage: parseFloat(document.getElementById('bsVoltage').value)
+        });
+        displaySolarResults('bsResults', response);
+    }
+
+    async function calculateInverterSizing() {
+        const response = await apiCall('/api/solar/inverter-sizing', 'POST', {
+            peak_load_w: parseFloat(document.getElementById('isPeakLoad').value),
+            surge_factor: parseFloat(document.getElementById('isSurge').value),
+            continuous_factor: parseFloat(document.getElementById('isContinuous').value)
+        });
+        displaySolarResults('isResults', response);
+    }
+
+    async function calculateLosses() {
+        const response = await apiCall('/api/solar/losses', 'POST', {
+            panel_capacity_kw: parseFloat(document.getElementById('slCapacity').value),
+            soiling: parseFloat(document.getElementById('slSoiling').value) / 100,
+            shading: parseFloat(document.getElementById('slShading').value) / 100,
+            wiring: parseFloat(document.getElementById('slWiring').value) / 100,
+            inverter_loss: parseFloat(document.getElementById('slInverter').value) / 100
+        });
+        displaySolarResults('slResults', {result: response.result, warnings: []});
+    }
+
+    async function calculateROI() {
+        const response = await apiCall('/api/solar/roi', 'POST', {
+            system_cost: parseFloat(document.getElementById('roiCost').value),
+            annual_production_kwh: parseFloat(document.getElementById('roiProduction').value),
+            electricity_rate: parseFloat(document.getElementById('roiRate').value),
+            incentives: parseFloat(document.getElementById('roiIncentives').value)
+        });
+        displaySolarResults('roiResults', response);
+    }
+
+    async function generateReport() {
+        const data = {
+            daily_energy_kwh: parseFloat(document.getElementById('psEnergy').value) || 30,
+            peak_sun_hours: parseFloat(document.getElementById('psSunHours').value) || 4.5,
+            system_efficiency: parseFloat(document.getElementById('psEfficiency').value) || 0.8,
+            num_panels: 20,
+            actual_capacity_kw: 8
+        };
+        
+        const response = await apiCall('/api/solar/report', 'POST', data);
+        if (response.filepath) {
+            showToast('Report generated! Check static/plots folder.');
+        }
+    }
+
+    function displaySolarResults(elementId, response) {
+        let html = '<div class="row">';
+        for (const [key, value] of Object.entries(response.result)) {
+            if (typeof value === 'object') continue;
+            const label = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+            html += `
+                <div class="col-md-6 mb-3">
+                    <div class="p-3 bg-light rounded">
+                        <div class="result-label">${label}</div>
+                        <div class="result-value">${formatNumber(value)}</div>
+                    </div>
+                </div>
+            `;
+        }
+        html += '</div>';
+
+        if (response.warnings && response.warnings.length > 0) {
+            html += `<div class="warning-box"><i class="fas fa-exclamation-triangle me-2"></i>${response.warnings.join('<br>')}</div>`;
+        }
+
+        document.getElementById(elementId).innerHTML = html;
+    }
+</script>
+{% endblock %}

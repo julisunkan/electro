@@ -1,0 +1,282 @@
+{% extends "base.html" %}
+
+{% block title %}Signal Processing - ElectroHub{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <h2 class="mb-4"><i class="fas fa-wave-square text-primary me-2"></i>Signal Processing</h2>
+
+    <div class="theory-panel">
+        <h6><i class="fas fa-lightbulb me-2"></i>Theory</h6>
+        <p class="mb-0">FFT transforms time-domain signals to frequency-domain. Nyquist frequency = sample_rate/2. SNR measures signal quality relative to noise.</p>
+    </div>
+
+    <div class="row">
+        <div class="col-md-4">
+            <div class="card mb-4">
+                <div class="card-header">Signal Generator</div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label class="form-label">Signal Type</label>
+                        <select class="form-select" id="sigType">
+                            <option value="sine">Sine</option>
+                            <option value="cosine">Cosine</option>
+                            <option value="square">Square</option>
+                            <option value="sawtooth">Sawtooth</option>
+                            <option value="triangle">Triangle</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Frequency (Hz)</label>
+                        <input type="number" class="form-control" id="sigFreq" value="100">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Amplitude</label>
+                        <input type="number" class="form-control" id="sigAmp" value="1">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Duration (s)</label>
+                        <input type="number" class="form-control" id="sigDuration" value="0.05" step="0.001">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Sample Rate (Hz)</label>
+                        <input type="number" class="form-control" id="sigSampleRate" value="10000">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">DC Offset</label>
+                        <input type="number" class="form-control" id="sigOffset" value="0">
+                    </div>
+                    <button class="btn btn-primary w-100" onclick="generateSignal()">
+                        <i class="fas fa-play me-2"></i>Generate Signal
+                    </button>
+                </div>
+            </div>
+
+            <div class="card mb-4">
+                <div class="card-header">Add Noise</div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label class="form-label">Noise Type</label>
+                        <select class="form-select" id="noiseType">
+                            <option value="gaussian">Gaussian (White)</option>
+                            <option value="uniform">Uniform</option>
+                            <option value="pink">Pink</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">SNR (dB)</label>
+                        <input type="number" class="form-control" id="noiseSNR" value="20">
+                    </div>
+                    <button class="btn btn-warning w-100" onclick="addNoise()">
+                        <i class="fas fa-random me-2"></i>Add Noise
+                    </button>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">Signal Statistics</div>
+                <div class="card-body" id="signalStats">
+                    <p class="text-muted">Generate a signal first...</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-8">
+            <div class="card mb-4">
+                <div class="card-header">Time Domain</div>
+                <div class="card-body">
+                    <div id="timePlot" class="plot-container" style="height: 300px;"></div>
+                </div>
+            </div>
+
+            <div class="card mb-4">
+                <div class="card-header">
+                    Frequency Domain (FFT)
+                    <button class="btn btn-sm btn-outline-primary float-end" onclick="computeFFT()">
+                        <i class="fas fa-chart-bar me-1"></i>Compute FFT
+                    </button>
+                </div>
+                <div class="card-body">
+                    <div id="fftPlot" class="plot-container" style="height: 300px;"></div>
+                    <div id="fftInfo" class="mt-3"></div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    Bandwidth Analysis
+                    <button class="btn btn-sm btn-outline-success float-end" onclick="analyzeBandwidth()">
+                        <i class="fas fa-chart-area me-1"></i>Analyze
+                    </button>
+                </div>
+                <div class="card-body" id="bandwidthResults">
+                    <p class="text-muted">Click Analyze to compute bandwidth...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    let currentSignal = null;
+    let currentSampleRate = 10000;
+
+    async function generateSignal() {
+        const response = await apiCall('/api/signal/generate', 'POST', {
+            signal_type: document.getElementById('sigType').value,
+            frequency: parseFloat(document.getElementById('sigFreq').value),
+            amplitude: parseFloat(document.getElementById('sigAmp').value),
+            duration: parseFloat(document.getElementById('sigDuration').value),
+            sample_rate: parseFloat(document.getElementById('sigSampleRate').value),
+            dc_offset: parseFloat(document.getElementById('sigOffset').value)
+        });
+
+        currentSignal = response.result.signal;
+        currentSampleRate = response.result.sample_rate;
+
+        const trace = {
+            x: response.result.time,
+            y: response.result.signal,
+            type: 'scatter',
+            line: { color: '#3498db' }
+        };
+
+        const layout = {
+            title: `${response.result.signal_type.toUpperCase()} Signal - ${response.result.frequency} Hz`,
+            xaxis: { title: 'Time (s)' },
+            yaxis: { title: 'Amplitude' }
+        };
+
+        Plotly.newPlot('timePlot', [trace], layout);
+
+        document.getElementById('signalStats').innerHTML = `
+            <div class="row">
+                <div class="col-6">
+                    <strong>RMS:</strong> ${formatNumber(response.result.rms)}
+                </div>
+                <div class="col-6">
+                    <strong>Peak-to-Peak:</strong> ${formatNumber(response.result.peak_to_peak)}
+                </div>
+            </div>
+        `;
+
+        showToast('Signal generated successfully!');
+    }
+
+    async function addNoise() {
+        if (!currentSignal) {
+            showToast('Generate a signal first!', 'warning');
+            return;
+        }
+
+        const response = await apiCall('/api/signal/noise', 'POST', {
+            signal_data: currentSignal,
+            noise_type: document.getElementById('noiseType').value,
+            snr_db: parseFloat(document.getElementById('noiseSNR').value)
+        });
+
+        currentSignal = response.result.noisy_signal;
+
+        const time = Array.from({length: currentSignal.length}, (_, i) => i / currentSampleRate);
+
+        const trace = {
+            x: time,
+            y: currentSignal,
+            type: 'scatter',
+            line: { color: '#e74c3c' }
+        };
+
+        const layout = {
+            title: `Noisy Signal (SNR: ${response.result.actual_snr_db.toFixed(1)} dB)`,
+            xaxis: { title: 'Time (s)' },
+            yaxis: { title: 'Amplitude' }
+        };
+
+        Plotly.newPlot('timePlot', [trace], layout);
+        showToast('Noise added successfully!');
+    }
+
+    async function computeFFT() {
+        if (!currentSignal) {
+            showToast('Generate a signal first!', 'warning');
+            return;
+        }
+
+        const response = await apiCall('/api/signal/fft', 'POST', {
+            signal_data: currentSignal,
+            sample_rate: currentSampleRate
+        });
+
+        const result = response.result;
+
+        const trace = {
+            x: result.frequencies,
+            y: result.magnitude_db,
+            type: 'scatter',
+            fill: 'tozeroy',
+            line: { color: '#27ae60' }
+        };
+
+        const layout = {
+            title: 'FFT Spectrum',
+            xaxis: { title: 'Frequency (Hz)' },
+            yaxis: { title: 'Magnitude (dB)' }
+        };
+
+        Plotly.newPlot('fftPlot', [trace], layout);
+
+        document.getElementById('fftInfo').innerHTML = `
+            <div class="alert alert-info">
+                <strong>Dominant Frequency:</strong> ${formatNumber(result.dominant_frequency)} Hz<br>
+                <strong>DC Component:</strong> ${formatNumber(result.dc_component)}
+            </div>
+        `;
+    }
+
+    async function analyzeBandwidth() {
+        if (!currentSignal) {
+            showToast('Generate a signal first!', 'warning');
+            return;
+        }
+
+        const response = await apiCall('/api/signal/bandwidth', 'POST', {
+            signal_data: currentSignal,
+            sample_rate: currentSampleRate,
+            threshold_db: -3
+        });
+
+        const result = response.result;
+
+        document.getElementById('bandwidthResults').innerHTML = `
+            <div class="row">
+                <div class="col-md-3">
+                    <div class="stat-box">
+                        <h3>${formatNumber(result.bandwidth)}</h3>
+                        <p>Bandwidth (Hz)</p>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="stat-box" style="background: linear-gradient(135deg, #27ae60, #1e8449);">
+                        <h3>${formatNumber(result.center_frequency)}</h3>
+                        <p>Center Freq (Hz)</p>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="stat-box" style="background: linear-gradient(135deg, #e74c3c, #c0392b);">
+                        <h3>${formatNumber(result.lower_frequency)}</h3>
+                        <p>Lower Freq (Hz)</p>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="stat-box" style="background: linear-gradient(135deg, #f39c12, #d68910);">
+                        <h3>${formatNumber(result.upper_frequency)}</h3>
+                        <p>Upper Freq (Hz)</p>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+</script>
+{% endblock %}
