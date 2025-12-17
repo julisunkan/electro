@@ -38,3 +38,12 @@ plotly
 reportlab
 scipy
 sympy
+flask
+matplotlib
+numpy
+paho-mqtt
+pandas
+plotly
+reportlab
+scipy
+sympy
