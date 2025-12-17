@@ -266,7 +266,14 @@
 
         const response = await apiCall('/api/lab/report', 'POST', { result: lastResult });
         if (response.filepath) {
-            showToast('Lab report generated successfully!');
+            const filename = response.filepath.split('/').pop();
+            const link = document.createElement('a');
+            link.href = '/api/download-pdf/' + filename;
+            link.download = filename;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            showToast('Lab report downloaded successfully!');
         }
     }
 </script>

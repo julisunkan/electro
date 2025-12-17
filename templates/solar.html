@@ -284,7 +284,14 @@
         
         const response = await apiCall('/api/solar/report', 'POST', data);
         if (response.filepath) {
-            showToast('Report generated! Check static/plots folder.');
+            const filename = response.filepath.split('/').pop();
+            const link = document.createElement('a');
+            link.href = '/api/download-pdf/' + filename;
+            link.download = filename;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            showToast('Report downloaded successfully!');
         }
     }
 
