@@ -1,6 +1,4 @@
 import numpy as np
-from scipy import signal as scipy_signal
-from scipy.fft import fft, fftfreq
 import math
 from database import save_calculation
 
@@ -12,11 +10,11 @@ def generate_signal(signal_type, frequency, amplitude, duration, sample_rate=100
     elif signal_type == 'cosine':
         signal = amplitude * np.cos(2 * np.pi * frequency * t + np.radians(phase)) + dc_offset
     elif signal_type == 'square':
-        signal = amplitude * scipy_signal.square(2 * np.pi * frequency * t + np.radians(phase)) + dc_offset
+        signal = amplitude * np.sign(np.sin(2 * np.pi * frequency * t + np.radians(phase))) + dc_offset
     elif signal_type == 'sawtooth':
-        signal = amplitude * scipy_signal.sawtooth(2 * np.pi * frequency * t + np.radians(phase)) + dc_offset
+        signal = amplitude * (2 * ((frequency * t + phase/360) % 1) - 1) + dc_offset
     elif signal_type == 'triangle':
-        signal = amplitude * scipy_signal.sawtooth(2 * np.pi * frequency * t + np.radians(phase), width=0.5) + dc_offset
+        signal = amplitude * (2 * np.abs(2 * ((frequency * t + phase/360) % 1) - 1) - 1) + dc_offset
     else:
         signal = np.zeros_like(t)
         signal_type = 'unknown'
@@ -45,8 +43,8 @@ def compute_fft(signal_data, sample_rate):
     
     signal_windowed = signal * np.hanning(n)
     
-    fft_result = fft(signal_windowed)
-    frequencies = fftfreq(n, 1/sample_rate)
+    fft_result = np.fft.fft(signal_windowed)
+    frequencies = np.fft.fftfreq(n, 1/sample_rate)
     
     positive_freqs = frequencies[:n//2]
     magnitude = np.abs(fft_result[:n//2]) * 2 / n
@@ -82,8 +80,8 @@ def add_noise(signal_data, noise_type='gaussian', snr_db=20):
         noise = np.random.uniform(-np.sqrt(3*noise_power), np.sqrt(3*noise_power), len(signal))
     elif noise_type == 'pink':
         white_noise = np.random.normal(0, 1, len(signal))
-        fft_white = fft(white_noise)
-        frequencies = fftfreq(len(white_noise))
+        fft_white = np.fft.fft(white_noise)
+        frequencies = np.fft.fftfreq(len(white_noise))
         frequencies[0] = 1e-10
         pink_filter = 1 / np.sqrt(np.abs(frequencies))
         pink_fft = fft_white * pink_filter
@@ -145,6 +143,13 @@ def bandwidth_analysis(signal_data, sample_rate, threshold_db=-3):
     
     return result
 
+def _butter_lowpass_coeffs(cutoff, fs, order=4):
+    """Simple low-pass filter using moving average approximation"""
+    nyq = 0.5 * fs
+    normalized_cutoff = cutoff / nyq
+    n = max(1, int(1.0 / normalized_cutoff))
+    return n
+
 def filter_signal(signal_data, sample_rate, filter_type, cutoff_freq, order=4):
     signal = np.array(signal_data)
     nyquist = sample_rate / 2
@@ -166,18 +171,29 @@ def filter_signal(signal_data, sample_rate, filter_type, cutoff_freq, order=4):
             'error': 'Cutoff frequency must be between 0 and Nyquist frequency'
         }
     
+    n = len(signal)
+    freq = np.fft.fftfreq(n, 1/sample_rate)
+    fft_signal = np.fft.fft(signal)
+    
     if filter_type == 'lowpass':
-        b, a = scipy_signal.butter(order, normalized_cutoff, btype='low')
+        mask = np.abs(freq) <= cutoff_freq
     elif filter_type == 'highpass':
-        b, a = scipy_signal.butter(order, normalized_cutoff, btype='high')
+        mask = np.abs(freq) >= cutoff_freq
     elif filter_type == 'bandpass':
-        b, a = scipy_signal.butter(order, normalized_cutoff, btype='band')
+        if isinstance(cutoff_freq, (list, tuple)) and len(cutoff_freq) == 2:
+            mask = (np.abs(freq) >= cutoff_freq[0]) & (np.abs(freq) <= cutoff_freq[1])
+        else:
+            return {'filtered_signal': signal_data, 'error': 'Bandpass requires two cutoff frequencies'}
     elif filter_type == 'bandstop':
-        b, a = scipy_signal.butter(order, normalized_cutoff, btype='bandstop')
+        if isinstance(cutoff_freq, (list, tuple)) and len(cutoff_freq) == 2:
+            mask = (np.abs(freq) <= cutoff_freq[0]) | (np.abs(freq) >= cutoff_freq[1])
+        else:
+            return {'filtered_signal': signal_data, 'error': 'Bandstop requires two cutoff frequencies'}
     else:
         return {'filtered_signal': signal_data, 'error': 'Unknown filter type'}
     
-    filtered = scipy_signal.filtfilt(b, a, signal)
+    filtered_fft = fft_signal * mask
+    filtered = np.real(np.fft.ifft(filtered_fft))
     
     result = {
         'filtered_signal': filtered.tolist(),

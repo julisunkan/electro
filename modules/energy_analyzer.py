@@ -1,6 +1,5 @@
 import numpy as np
 import pandas as pd
-from scipy import signal
 from database import save_energy_data, get_energy_data
 import os
 
@@ -72,18 +71,23 @@ def analyze_csv(file_path, time_column='time', power_column='power', cost_per_kw
     return result, warnings
 
 def detect_peaks(power_data, threshold_factor=1.5):
+    """Simple peak detection using numpy only"""
     data = np.array(power_data)
     mean_power = np.mean(data)
     threshold = mean_power * threshold_factor
     
-    peaks, properties = signal.find_peaks(data, height=threshold, distance=5)
+    peaks = []
+    peak_values = []
     
-    peak_times = peaks.tolist()
-    peak_values = data[peaks].tolist() if len(peaks) > 0 else []
+    for i in range(1, len(data) - 1):
+        if data[i] > data[i-1] and data[i] > data[i+1] and data[i] >= threshold:
+            if len(peaks) == 0 or i - peaks[-1] >= 5:
+                peaks.append(i)
+                peak_values.append(float(data[i]))
     
     result = {
         'num_peaks': len(peaks),
-        'peak_indices': peak_times,
+        'peak_indices': peaks,
         'peak_values': peak_values,
         'threshold_used': threshold,
         'mean_power': mean_power,
