@@ -143,7 +143,24 @@ All modules expose REST API endpoints under `/api/`:
 - CSV export available
 
 ## Recent Changes
+- 2025-12-17: PWA Enhancement Update
+  - Added Progressive Web App (PWA) support with manifest and service worker
+  - Generated colorful PNG and maskable logos
+  - Improved UI with modern animations and transitions
+  - Fixed sidebar menu alignment with smooth hover effects
+  - Added hero slideshow on homepage dashboard
+  - Fixed PDF download functionality
+  - Added gradient-colored module icons
+  - Enhanced overall visual design with modern styling
+
 - 2025-12-17: Initial implementation of all 9 modules
 - Clean Bootstrap UI with responsive design
 - Interactive Plotly charts for visualization
 - SQLite database for data persistence
+
+## PWA Features
+- Installable as a standalone app on mobile and desktop
+- Service worker for offline caching support
+- Custom app icons (192x192 and 512x512)
+- Maskable icon for adaptive display
+- Theme color integration
