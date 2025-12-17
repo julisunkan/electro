@@ -53,72 +53,9 @@
     </nav>
 
     <div class="container-fluid">
-        <div class="row">
-            <nav class="col-md-2 d-none d-md-block sidebar">
-                <div class="position-sticky sidebar-sticky">
-                    <ul class="nav flex-column">
-                        <li class="nav-item">
-                            <a class="nav-link {% if request.path == '/' %}active{% endif %}" href="/">
-                                <i class="fas fa-tachometer-alt"></i>
-                                <span>Dashboard</span>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link {% if request.path == '/calculator' %}active{% endif %}" href="/calculator">
-                                <i class="fas fa-calculator"></i>
-                                <span>Calculator</span>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link {% if request.path == '/circuit' %}active{% endif %}" href="/circuit">
-                                <i class="fas fa-project-diagram"></i>
-                                <span>Circuit Analysis</span>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link {% if request.path == '/signal' %}active{% endif %}" href="/signal">
-                                <i class="fas fa-wave-square"></i>
-                                <span>Signal Processing</span>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link {% if request.path == '/antenna' %}active{% endif %}" href="/antenna">
-                                <i class="fas fa-broadcast-tower"></i>
-                                <span>Antenna & RF</span>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link {% if request.path == '/solar' %}active{% endif %}" href="/solar">
-                                <i class="fas fa-solar-panel"></i>
-                                <span>Solar Energy</span>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link {% if request.path == '/energy' %}active{% endif %}" href="/energy">
-                                <i class="fas fa-bolt"></i>
-                                <span>Energy Analyzer</span>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link {% if request.path == '/iot' %}active{% endif %}" href="/iot">
-                                <i class="fas fa-network-wired"></i>
-                                <span>IoT Monitoring</span>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link {% if request.path == '/lab' %}active{% endif %}" href="/lab">
-                                <i class="fas fa-flask"></i>
-                                <span>Virtual Lab</span>
-                            </a>
-                        </li>
-                    </ul>
-                </div>
-            </nav>
-
-            <main class="col-md-10 ms-sm-auto main-content fade-in">
-                {% block content %}{% endblock %}
-            </main>
-        </div>
+        <main class="main-content fade-in">
+            {% block content %}{% endblock %}
+        </main>
     </div>
 
     <div class="toast-container" id="toastContainer"></div>
@@ -175,16 +112,6 @@
             return await response.json();
         }
 
-        document.querySelectorAll('.sidebar .nav-link').forEach(link => {
-            link.addEventListener('mouseenter', function() {
-                this.style.transform = 'translateX(5px)';
-            });
-            link.addEventListener('mouseleave', function() {
-                if (!this.classList.contains('active')) {
-                    this.style.transform = 'translateX(0)';
-                }
-            });
-        });
     </script>
     {% block scripts %}{% endblock %}
 </body>
