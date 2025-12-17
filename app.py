@@ -598,7 +598,22 @@ def api_constants():
 
 @app.route('/download/<path:filename>')
 def download_file(filename):
-    return send_file(os.path.join('static', 'plots', filename), as_attachment=True)
+    filepath = os.path.join('static', 'plots', filename)
+    if os.path.exists(filepath):
+        return send_file(filepath, as_attachment=True, mimetype='application/pdf')
+    return jsonify({'error': 'File not found'}), 404
+
+@app.route('/api/download-pdf/<path:filename>')
+def download_pdf(filename):
+    filepath = os.path.join('static', 'plots', filename)
+    if os.path.exists(filepath):
+        return send_file(
+            filepath, 
+            as_attachment=True, 
+            download_name=filename,
+            mimetype='application/pdf'
+        )
+    return jsonify({'error': 'File not found'}), 404
 
 if __name__ == '__main__':
     os.makedirs('static/plots', exist_ok=True)
