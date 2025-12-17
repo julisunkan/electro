@@ -56,6 +56,10 @@ init_db()
 def index():
     return render_template('index.html')
 
+@app.route('/sw.js')
+def service_worker():
+    return send_file('static/sw.js', mimetype='application/javascript')
+
 @app.route('/calculator')
 def calculator():
     return render_template('calculator.html', constants=ENGINEERING_CONSTANTS, prefixes=UNIT_PREFIXES)
