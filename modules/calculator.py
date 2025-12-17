@@ -212,7 +212,7 @@ def amplifier_gain(input_voltage, output_voltage=None, gain_db=None, gain_linear
         'gain_db': gain_db
     }
     
-    if abs(gain_db) > 60:
+    if gain_db is not None and abs(gain_db) > 60:
         warnings.append("Very high gain - consider stability and noise")
     
     save_calculation('amplifier_gain',
