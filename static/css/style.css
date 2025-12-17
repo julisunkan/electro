@@ -147,105 +147,6 @@ body {
     text-align: center;
 }
 
-.sidebar {
-    background: linear-gradient(180deg, #ffffff 0%, #f8f9fa 100%);
-    height: calc(100vh - 60px);
-    box-shadow: 4px 0 20px rgba(0, 0, 0, 0.05);
-    padding-top: 20px;
-    padding-bottom: 20px;
-    position: fixed;
-    top: 60px;
-    left: 0;
-    width: 16.666667%;
-    overflow-y: auto;
-    scrollbar-width: thin;
-    scrollbar-color: var(--secondary-color) #e0e0e0;
-}
-
-.sidebar::-webkit-scrollbar {
-    width: 8px;
-}
-
-.sidebar::-webkit-scrollbar-track {
-    background: linear-gradient(180deg, #e8f4fd, #d6eaf8);
-    border-radius: 10px;
-}
-
-.sidebar::-webkit-scrollbar-thumb {
-    background: linear-gradient(180deg, #667eea, #764ba2, #ee0979, #ff6a00);
-    border-radius: 10px;
-    transition: background 0.3s ease;
-}
-
-.sidebar::-webkit-scrollbar-thumb:hover {
-    background: linear-gradient(180deg, #5a67d8, #6b46c1, #d53f8c, #ed8936);
-}
-
-.sidebar-sticky {
-    padding: 0 10px;
-}
-
-.sidebar .nav-link {
-    color: var(--dark-text);
-    padding: 14px 18px;
-    border-radius: 12px;
-    margin: 6px 0;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    position: relative;
-    overflow: hidden;
-}
-
-.sidebar .nav-link::before {
-    content: '';
-    position: absolute;
-    left: 0;
-    top: 0;
-    height: 100%;
-    width: 4px;
-    background: var(--secondary-color);
-    transform: scaleY(0);
-    transition: transform 0.3s ease;
-}
-
-.sidebar .nav-link:hover {
-    background: linear-gradient(135deg, rgba(52, 152, 219, 0.1), rgba(52, 152, 219, 0.05));
-    color: var(--secondary-color);
-}
-
-.sidebar .nav-link:hover::before {
-    transform: scaleY(1);
-}
-
-.sidebar .nav-link.active {
-    background: linear-gradient(135deg, var(--secondary-color), #2980b9);
-    color: white;
-    box-shadow: 0 4px 15px rgba(52, 152, 219, 0.4);
-    transform: translateX(5px);
-}
-
-.sidebar .nav-link.active::before {
-    background: white;
-    transform: scaleY(1);
-}
-
-.sidebar .nav-link i {
-    font-size: 1.1rem;
-    width: 24px;
-    text-align: center;
-    transition: transform 0.3s ease;
-}
-
-.sidebar .nav-link:hover i {
-    transform: scale(1.2);
-}
-
-.sidebar .nav-link span {
-    font-weight: 500;
-}
-
 .main-content {
     padding: 30px;
     min-height: calc(100vh - 60px);
@@ -835,15 +736,7 @@ code {
 }
 
 @media (max-width: 768px) {
-    .sidebar {
-        position: static;
-        width: 100%;
-        min-height: auto;
-        padding-bottom: 20px;
-    }
-    
     .main-content {
-        margin-left: 0;
         padding: 15px;
     }
     
