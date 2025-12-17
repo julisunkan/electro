@@ -1,7 +1,7 @@
 {
   "name": "ElectroHub - Electronics Engineering Platform",
   "short_name": "ElectroHub",
-  "description": "Your all-in-one Electronics Engineering Web Platform",
+  "description": "Your all-in-one Electronics Engineering App",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#2c3e50",
