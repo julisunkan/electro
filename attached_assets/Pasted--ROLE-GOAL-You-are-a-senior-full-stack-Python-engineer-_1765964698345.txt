@@ -1,0 +1,308 @@
+🎯 ROLE & GOAL
+
+You are a senior full-stack Python engineer and electronics engineer.
+
+Develop a fully functional Flask-based web application called ElectroHub — an all-in-one Electronics Engineering web platform.
+
+The app must be:
+
+Built using Python + Flask
+
+Use SQLite as the only database
+
+NO user login or registration
+
+Use ONLY free and open-source libraries
+
+Work offline (except IoT data ingestion)
+
+Be structured, modular, and runnable on Replit
+
+🧱 TECH STACK (STRICT)
+
+Backend: Python 3, Flask
+
+Database: SQLite (sqlite3)
+
+Frontend: HTML, CSS, Bootstrap, Vanilla JS
+
+Math & Engineering: NumPy, SciPy, SymPy, Pandas
+
+Visualization: Matplotlib, Plotly
+
+Reports: ReportLab
+
+IoT (optional): Flask REST API or MQTT (paho-mqtt)
+
+No paid APIs
+
+No authentication libraries
+
+🗂 PROJECT STRUCTURE (MANDATORY)
+ElectroHub/
+│
+├── app.py
+├── database.py
+├── requirements.txt
+│
+├── modules/
+│   ├── calculator.py
+│   ├── circuit_analysis.py
+│   ├── signal_processing.py
+│   ├── antenna_rf.py
+│   ├── solar_energy.py
+│   ├── energy_analyzer.py
+│   ├── fault_diagnosis.py
+│   ├── iot_api.py
+│   └── virtual_lab.py
+│
+├── templates/
+│   ├── index.html
+│   ├── calculator.html
+│   ├── circuit.html
+│   ├── signal.html
+│   ├── antenna.html
+│   ├── solar.html
+│   ├── energy.html
+│   ├── iot.html
+│   └── lab.html
+│
+├── static/
+│   ├── css/style.css
+│   └── plots/
+│
+└── electrohub.db
+
+🗄 DATABASE (CREATE AUTOMATICALLY)
+
+Create SQLite tables on first run:
+
+calculations
+id INTEGER PRIMARY KEY AUTOINCREMENT,
+module TEXT,
+input_data TEXT,
+result TEXT,
+warnings TEXT,
+timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
+
+iot_readings
+id INTEGER PRIMARY KEY AUTOINCREMENT,
+sensor TEXT,
+value REAL,
+unit TEXT,
+alert INTEGER,
+timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
+
+energy_data
+id INTEGER PRIMARY KEY AUTOINCREMENT,
+filename TEXT,
+total_energy REAL,
+peak_load REAL,
+efficiency REAL,
+cost REAL
+
+lab_reports
+id INTEGER PRIMARY KEY AUTOINCREMENT,
+experiment TEXT,
+result TEXT,
+conclusion TEXT,
+pdf_path TEXT,
+timestamp DATETIME
+
+🧩 MODULE REQUIREMENTS (IMPLEMENT ALL)
+1️⃣ Electronics Calculator
+
+Ohm’s law
+
+RC / RL / RLC
+
+Filters & amplifier gain
+
+Unit converter
+
+Tolerance analysis
+
+Power rating checker
+
+What-if analysis
+
+Save calculation history
+
+Export PDF / CSV
+
+Validation warnings
+
+2️⃣ Circuit Analysis
+
+DC & AC analysis
+
+Frequency response
+
+Efficiency & losses
+
+Comparative analysis
+
+Interactive plots
+
+Auto-generated conclusions
+
+3️⃣ Signal Processing
+
+Signal generator
+
+FFT
+
+Noise injection
+
+Bandwidth analysis
+
+Interactive Plotly charts
+
+Export plots
+
+4️⃣ Antenna & RF Design
+
+Dipole/Yagi calculations
+
+Frequency ↔ wavelength
+
+Impedance basics
+
+Feasibility warnings
+
+Constants library
+
+5️⃣ Solar & Energy System Design
+
+Panel sizing
+
+Battery & inverter calculations
+
+Loss & efficiency
+
+Validation alerts
+
+Comparison mode
+
+Export PDF report
+
+6️⃣ Energy Consumption Analyzer
+
+CSV upload
+
+Peak detection
+
+Cost estimation
+
+Efficiency calculation
+
+Comparative analysis
+
+Export results
+
+7️⃣ Fault Diagnosis (Expert System)
+
+Symptom-based troubleshooting
+
+Rule-based logic
+
+Repair priority
+
+Auto conclusions
+
+8️⃣ IoT Monitoring
+
+REST API endpoint for sensor data
+
+MQTT support (optional)
+
+Threshold alerts
+
+Device simulator mode
+
+Historical data plots
+
+Export sensor data
+
+9️⃣ Virtual Electronics Lab
+
+Predefined experiments:
+
+RC transient
+
+RLC resonance
+
+Diode characteristics
+
+Amplifier gain
+
+Error & tolerance simulation
+
+Auto conclusions
+
+PDF lab report generation
+
+🧰 GLOBAL FEATURES (REQUIRED)
+
+Engineering unit converter
+
+Engineering constants library
+
+Interactive charts
+
+Help & theory panel per module
+
+Offline-first design
+
+Clean Bootstrap UI
+
+Dashboard navigation
+
+⚠️ RESTRICTIONS
+
+❌ No login / registration
+
+❌ No paid APIs
+
+❌ No cloud databases
+
+❌ No AI/LLM APIs
+
+❌ No unnecessary complexity
+
+📤 OUTPUT REQUIREMENTS
+
+Provide fully working code
+
+Include requirements.txt
+
+Ensure app runs via:
+
+python app.py
+
+
+Include inline comments
+
+Use clean, readable code
+
+🎓 QUALITY GOAL
+
+The project should be:
+
+Final-year project ready
+
+Viva-defensible
+
+Demo-friendly
+
+Modular and extendable
+
+🚀 START BY:
+
+Creating base Flask app
+
+Initializing SQLite
+
+Implementing Electronics Calculator + Utilities
+
+Proceed module-by-module
