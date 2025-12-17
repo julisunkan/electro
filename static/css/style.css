@@ -157,6 +157,27 @@ body {
     left: 0;
     width: 16.666667%;
     overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: var(--secondary-color) #e0e0e0;
+}
+
+.sidebar::-webkit-scrollbar {
+    width: 8px;
+}
+
+.sidebar::-webkit-scrollbar-track {
+    background: linear-gradient(180deg, #e8f4fd, #d6eaf8);
+    border-radius: 10px;
+}
+
+.sidebar::-webkit-scrollbar-thumb {
+    background: linear-gradient(180deg, #667eea, #764ba2, #ee0979, #ff6a00);
+    border-radius: 10px;
+    transition: background 0.3s ease;
+}
+
+.sidebar::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(180deg, #5a67d8, #6b46c1, #d53f8c, #ed8936);
 }
 
 .sidebar-sticky {

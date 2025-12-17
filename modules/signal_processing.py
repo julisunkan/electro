@@ -19,6 +19,7 @@ def generate_signal(signal_type, frequency, amplitude, duration, sample_rate=100
         signal = amplitude * scipy_signal.sawtooth(2 * np.pi * frequency * t + np.radians(phase), width=0.5) + dc_offset
     else:
         signal = np.zeros_like(t)
+        signal_type = 'unknown'
     
     result = {
         'time': t.tolist(),
@@ -153,10 +154,16 @@ def filter_signal(signal_data, sample_rate, filter_type, cutoff_freq, order=4):
     else:
         normalized_cutoff = cutoff_freq / nyquist
     
-    if normalized_cutoff >= 1 or (isinstance(normalized_cutoff, list) and any(f >= 1 for f in normalized_cutoff)):
+    if isinstance(normalized_cutoff, list):
+        if any(f >= 1 or f <= 0 for f in normalized_cutoff):
+            return {
+                'filtered_signal': signal_data,
+                'error': 'Cutoff frequency must be between 0 and Nyquist frequency'
+            }
+    elif normalized_cutoff >= 1 or normalized_cutoff <= 0:
         return {
             'filtered_signal': signal_data,
-            'error': 'Cutoff frequency must be less than Nyquist frequency'
+            'error': 'Cutoff frequency must be between 0 and Nyquist frequency'
         }
     
     if filter_type == 'lowpass':
